@@ -1,0 +1,19 @@
+<div class="container">
+    <div class="form-box">
+        <!-- indicar que o formulário está sendo controlado pelo módulo do angular-->
+        <form #frmCalculadora="ngForm">
+            <h2>Calculadora</h2>
+            <label for="numero1">Número 1</label>  <!--referencia a váriavel numero1 para receber o valor do input -->
+            <input type="number" name="numero1" id="numero1"[(ngModel)]="numero1"> 
+            <label for="numero2">Número 2</label>
+            <input type="number" name="numero2" id="numero2"[(ngModel)]="numero2">
+            <!--chama o método somar -->
+            <button type="button" (click)="somar()">Calcular</button>
+        </form>
+        <div class="result-display"></div>
+        <!-- referencia a váriavel de resultado para exibir o resultado da operação do calculadora.ts -->
+            <p>Resultado: <span id="result">{{resultado}}</span></p>
+
+        
+    </div>
+</div>
