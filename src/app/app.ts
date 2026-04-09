@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import {ListaCompras } from './lista-compras/lista-compras';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
-  imports: [ListaCompras],
-  templateUrl: './app.html',
+  imports: [Button],
+  templateUrl: './button-demo.html',
   styleUrl: './app.css'
 })
 export class App {
