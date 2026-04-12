@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { Button } from 'primeng/button';
+import { UsersComponent } from './users.component';
 
 @Component({
   selector: 'app-root',
-  imports: [Button],
-  templateUrl: './button-demo.html',
+  standalone: true,
+  imports: [UsersComponent],
+  templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
