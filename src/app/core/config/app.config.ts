@@ -5,7 +5,7 @@ import Aura from '@primeuix/themes/aura'
 import { providePrimeNG } from 'primeng/config';
 import { SplitterModule } from 'primeng/splitter';
 
-import { routes } from './app.routes';
+import { routes } from '../routes/app.routes';
 
 const MyCustomPreset = definePreset(Aura, {
     semantic: {

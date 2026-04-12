@@ -9,23 +9,8 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-
-type AppUser = {
-  id: number;
-  name: string;
-  email: string;
-  role: 'admin' | 'operador' | 'visualizador';
-  status: 'ativo' | 'inativo';
-  lastLogin: string;
-};
-
-const initialUsers: AppUser[] = [
-  { id: 1, name: 'Admin Sistema', email: 'admin@shipstock.com', role: 'admin', status: 'ativo', lastLogin: '2026-04-06 09:30' },
-  { id: 2, name: 'Carlos Mendes', email: 'carlos@shipstock.com', role: 'operador', status: 'ativo', lastLogin: '2026-04-06 08:15' },
-  { id: 3, name: 'Ana Souza', email: 'ana@shipstock.com', role: 'operador', status: 'ativo', lastLogin: '2026-04-05 17:45' },
-  { id: 4, name: 'Roberto Lima', email: 'roberto@shipstock.com', role: 'visualizador', status: 'inativo', lastLogin: '2026-03-20 14:00' },
-  { id: 5, name: 'Fernanda Costa', email: 'fernanda@shipstock.com', role: 'visualizador', status: 'ativo', lastLogin: '2026-04-04 11:30' },
-];
+import { UserService } from '../../core/services';
+import { AppUser } from '../../shared/models';
 
 const roleLabels = {
   admin: { label: 'Admin', icon: 'pi-shield-fill', color: 'text-primary' },
@@ -34,6 +19,7 @@ const roleLabels = {
 };
 
 @Component({
+  standalone: true,
   selector: 'app-users',
   imports: [CommonModule, FormsModule, TableModule, InputTextModule, DialogModule, ButtonModule, MessageModule, SelectModule, IconField, InputIcon],
   templateUrl: './users.component.html',
@@ -42,9 +28,12 @@ const roleLabels = {
 export class UsersComponent {
   search = '';
   dialogOpen = false;
-  allUsers = signal(initialUsers);
   editingUser = signal<AppUser | null>(null);
   errorMessage = signal<string | null>(null);
+
+  get allUsers() {
+    return this.userService.users;
+  }
 
   roles = [
     { label: 'Admin', value: 'admin' },
@@ -67,6 +56,8 @@ export class UsersComponent {
   };
 
   roleLabels = roleLabels;
+
+  constructor(private userService: UserService) {}
 
   get filteredUsers() {
     const searchTerm = this.search.toLowerCase();
@@ -146,32 +137,24 @@ export class UsersComponent {
     this.errorMessage.set(null);
 
     if (this.editingUser()) {
-      this.allUsers.update(users =>
-        users.map(user =>
-          user.id === this.form.id
-            ? {
-                ...user,
-                name: trimmedName,
-                email: trimmedEmail,
-                role: this.form.role,
-                status: this.form.status
-              }
-            : user
-        )
-      );
+      this.userService.updateUser({
+        id: this.form.id,
+        name: trimmedName,
+        email: trimmedEmail,
+        role: this.form.role,
+        status: this.form.status,
+        lastLogin: this.editingUser()!.lastLogin
+      });
     } else {
       const nextId = Math.max(...this.allUsers().map(u => u.id), 0) + 1;
-      this.allUsers.update(users => [
-        ...users,
-        {
-          id: nextId,
-          name: trimmedName,
-          email: trimmedEmail,
-          role: this.form.role,
-          status: this.form.status,
-          lastLogin: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-        }
-      ]);
+      this.userService.addUser({
+        id: nextId,
+        name: trimmedName,
+        email: trimmedEmail,
+        role: this.form.role,
+        status: this.form.status,
+        lastLogin: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+      });
     }
 
     this.closeDialog();
@@ -182,7 +165,7 @@ export class UsersComponent {
       return;
     }
 
-    this.allUsers.update(users => users.filter(item => item.id !== user.id));
+    this.userService.deleteUser(user.id);
   }
 
   closeDialog() {

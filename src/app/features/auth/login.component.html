@@ -1,0 +1,15 @@
+<div class="login-container">
+  <h2>Acesso ao Sistema</h2>
+  
+  <p>Estado atual: <strong>{{ authService.isLoggedIn() ? 'Logado' : 'Deslogado' }}</strong></p>
+
+  @if (!authService.isLoggedIn()) {
+    <button class="login-btn" (click)="authService.login()">Fazer Login</button>
+  } @else {
+    <button class="logout-btn" (click)="authService.logout()">Fazer Logout</button>
+  }
+
+  <p style="font-size: 0.8rem; color: #666; margin-top: 1rem;">
+    * Use o botão acima para testar o acesso à rota de usuários.
+  </p>
+</div>
