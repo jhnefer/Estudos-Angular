@@ -3,7 +3,6 @@ import { UsersComponent } from './users.component';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [UsersComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'

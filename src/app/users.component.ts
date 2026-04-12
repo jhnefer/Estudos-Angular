@@ -35,7 +35,6 @@ const roleLabels = {
 
 @Component({
   selector: 'app-users',
-  standalone: true,
   imports: [CommonModule, FormsModule, TableModule, InputTextModule, DialogModule, ButtonModule, MessageModule, SelectModule, IconField, InputIcon],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'

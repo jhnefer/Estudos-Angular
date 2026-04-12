@@ -63,10 +63,12 @@
 <p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '600px' }" [closable]="false" [header]="dialogTitle">
   <div class="flex flex-column gap-4 p-4">
     <!-- Mensagem de Erro -->
-    <div *ngIf="errorMessage()" class="p-3 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
-      <i class="pi pi-exclamation-circle mt-1"></i>
-      <span class="text-sm font-medium">{{ errorMessage() }}</span>
-    </div>
+    @if (errorMessage()) {
+      <div class="p-3 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
+        <i class="pi pi-exclamation-circle mt-1"></i>
+        <span class="text-sm font-medium">{{ errorMessage() }}</span>
+      </div>
+    }
 
     <!-- Nome Completo -->
     <div class="flex flex-column gap-2">
