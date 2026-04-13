@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -21,12 +21,17 @@ const roleLabels = {
 @Component({
   standalone: true,
   selector: 'app-users',
-  imports: [CommonModule, FormsModule, TableModule, InputTextModule, DialogModule, ButtonModule, MessageModule, SelectModule, IconField, InputIcon],
+  imports: [CommonModule, ReactiveFormsModule, TableModule, InputTextModule, DialogModule, ButtonModule, MessageModule, SelectModule, IconField, InputIcon],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
 export class UsersComponent {
-  search = '';
+  private fb = inject(FormBuilder);
+  private userService = inject(UserService);
+
+  searchControl = new FormControl('');
+  userForm: FormGroup;
+  
   dialogOpen = false;
   editingUser = signal<AppUser | null>(null);
   errorMessage = signal<string | null>(null);
@@ -46,21 +51,21 @@ export class UsersComponent {
     { label: 'Inativo', value: 'inativo' }
   ];
 
-  form = {
-    id: 0,
-    name: '',
-    email: '',
-    role: 'operador' as AppUser['role'],
-    status: 'ativo' as AppUser['status'],
-    password: ''
-  };
-
   roleLabels = roleLabels;
 
-  constructor(private userService: UserService) {}
+  constructor() {
+    this.userForm = this.fb.group({
+      id: [0],
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      role: ['operador', Validators.required],
+      status: ['ativo', Validators.required],
+      password: ['']
+    });
+  }
 
   get filteredUsers() {
-    const searchTerm = this.search.toLowerCase();
+    const searchTerm = (this.searchControl.value || '').toLowerCase();
     return searchTerm
       ? this.allUsers().filter(u =>
           u.name.toLowerCase().includes(searchTerm) ||
@@ -79,80 +84,69 @@ export class UsersComponent {
 
   openNewUser() {
     this.editingUser.set(null);
-    this.form = {
+    this.userForm.reset({
       id: 0,
-      name: '',
-      email: '',
       role: 'operador',
       status: 'ativo',
       password: ''
-    };
+    });
+    
+    // Para novos usuários, senha é obrigatória
+    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.userForm.get('password')?.updateValueAndValidity();
+    
     this.errorMessage.set(null);
     this.dialogOpen = true;
   }
 
   openEditUser(user: AppUser) {
     this.editingUser.set(user);
-    this.form = {
+    this.userForm.patchValue({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       status: user.status,
       password: ''
-    };
+    });
+
+    // Para edição, senha é opcional
+    this.userForm.get('password')?.setValidators([Validators.minLength(6)]);
+    this.userForm.get('password')?.updateValueAndValidity();
+
     this.errorMessage.set(null);
     this.dialogOpen = true;
   }
 
   saveUser() {
-    const trimmedName = this.form.name.trim();
-    const trimmedEmail = this.form.email.trim().toLowerCase();
+    if (this.userForm.invalid) {
+      this.errorMessage.set('Por favor, preencha todos os campos corretamente.');
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
+    const userData = this.userForm.value;
     const isNewUser = !this.editingUser();
-
-    // Validação de campos obrigatórios
-    if (!trimmedName || !trimmedEmail) {
-      this.errorMessage.set('Nome e e-mail são obrigatórios.');
-      return;
-    }
-
-    // Validação de formato de e-mail
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      this.errorMessage.set('Por favor, insira um e-mail válido.');
-      return;
-    }
-
-    // Validação de senha
-    if (isNewUser && (!this.form.password || this.form.password.length < 6)) {
-      this.errorMessage.set('A senha deve ter pelo menos 6 caracteres para novos usuários.');
-      return;
-    }
-
-    if (!isNewUser && this.form.password && this.form.password.length < 6) {
-      this.errorMessage.set('A nova senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
 
     this.errorMessage.set(null);
 
-    if (this.editingUser()) {
+    if (!isNewUser) {
       this.userService.updateUser({
-        id: this.form.id,
-        name: trimmedName,
-        email: trimmedEmail,
-        role: this.form.role,
-        status: this.form.status,
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        status: userData.status,
         lastLogin: this.editingUser()!.lastLogin
       });
     } else {
       const nextId = Math.max(...this.allUsers().map(u => u.id), 0) + 1;
       this.userService.addUser({
         id: nextId,
-        name: trimmedName,
-        email: trimmedEmail,
-        role: this.form.role,
-        status: this.form.status,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        status: userData.status,
         lastLogin: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
       });
     }
@@ -172,13 +166,6 @@ export class UsersComponent {
     this.dialogOpen = false;
     this.editingUser.set(null);
     this.errorMessage.set(null);
-    this.form = {
-      id: 0,
-      name: '',
-      email: '',
-      role: 'operador',
-      status: 'ativo',
-      password: ''
-    };
+    this.userForm.reset();
   }
 }

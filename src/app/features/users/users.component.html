@@ -6,11 +6,11 @@
     </div>
 
     <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
-      <!-- Busca com ícone usando PrimeNG 21 -->
+      <!-- Busca com ícone usando Reactive Forms -->
       <p-iconfield iconPosition="left" class="w-full sm:w-20rem">
         <p-inputicon class="pi pi-search"></p-inputicon>
-        <input pInputText type="text" name="search" placeholder="Buscar por nome ou email..."
-               [(ngModel)]="search" class="w-full text-sm" />
+        <input pInputText type="text" [formControl]="searchControl" placeholder="Buscar por nome ou email..."
+               class="w-full text-sm" />
       </p-iconfield>
       
       <!-- Botão com tamanho controlado -->
@@ -61,7 +61,7 @@
 </div>
 
 <p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '600px' }" [closable]="false" [header]="dialogTitle">
-  <div class="flex flex-column gap-4 p-4">
+  <div class="flex flex-column gap-4 p-4" [formGroup]="userForm">
     <!-- Mensagem de Erro -->
     @if (errorMessage()) {
       <div class="p-3 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
@@ -73,32 +73,52 @@
     <!-- Nome Completo -->
     <div class="flex flex-column gap-2">
       <label for="name" class="text-xs font-bold uppercase text-500">Nome Completo</label>
-      <input pInputText id="name" type="text" name="name" [(ngModel)]="form.name" placeholder="Ex: João Silva" class="w-full" />
+      <input pInputText id="name" type="text" formControlName="name" placeholder="Ex: João Silva" class="w-full" 
+             [class.ng-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched" />
+      @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
+        <small class="text-red-500">
+          Nome é obrigatório (mín. 3 caracteres).
+        </small>
+      }
     </div>
 
     <!-- E-mail -->
     <div class="flex flex-column gap-2">
       <label for="email" class="text-xs font-bold uppercase text-500">E-mail</label>
-      <input pInputText id="email" type="email" name="email" [(ngModel)]="form.email" placeholder="usuario@exemplo.com" class="w-full" />
+      <input pInputText id="email" type="email" formControlName="email" placeholder="usuario@exemplo.com" class="w-full"
+             [class.ng-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched" />
+      @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+        <small class="text-red-500">
+          Insira um e-mail válido.
+        </small>
+      }
     </div>
 
     <!-- Grid Perfil e Status -->
     <div class="grid">
       <div class="col-6 flex flex-column gap-2">
         <label for="role" class="text-xs font-bold uppercase text-500">Perfil</label>
-        <p-select id="role" name="role" [options]="roles" [(ngModel)]="form.role" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
+        <p-select id="role" [options]="roles" formControlName="role" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
       </div>
       <div class="col-6 flex flex-column gap-2">
         <label for="status" class="text-xs font-bold uppercase text-500">Status</label>
-        <p-select id="status" name="status" [options]="statuses" [(ngModel)]="form.status" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
+        <p-select id="status" [options]="statuses" formControlName="status" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
       </div>
     </div>
 
     <!-- Senha -->
     <div class="flex flex-column gap-2">
       <label for="password" class="text-xs font-bold uppercase text-500">Senha</label>
-      <input pInputText id="password" type="password" name="password" [(ngModel)]="form.password" placeholder="Mínimo 6 caracteres" class="w-full" />
-      <small class="text-xs text-500" *ngIf="editingUser()">Deixe em branco para manter a atual.</small>
+      <input pInputText id="password" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" class="w-full"
+             [class.ng-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched" />
+      @if (editingUser()) {
+        <small class="text-xs text-500">Deixe em branco para manter a atual.</small>
+      }
+      @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+        <small class="text-red-500">
+          Senha deve ter no mínimo 6 caracteres.
+        </small>
+      }
     </div>
   </div>
 
