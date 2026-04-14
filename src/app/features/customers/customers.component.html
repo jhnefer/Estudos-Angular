@@ -1,0 +1,291 @@
+<div class="flex flex-column gap-4 mb-5">
+  <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold m-0 text-900">Gestão de Clientes</h1>
+      <p class="text-sm text-500 m-0">{{ allCustomers().length }} clientes cadastrados</p>
+    </div>
+
+    <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
+      <p-iconfield iconPosition="left" class="w-full sm:w-20rem">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input pInputText type="text" [formControl]="searchControl" placeholder="Buscar por nome, fantasia ou CNPJ..."
+               class="w-full text-sm" />
+      </p-iconfield>
+      
+      <button pButton type="button" icon="pi pi-plus" label="Novo Cliente" 
+              class="p-button-primary w-full sm:w-auto"
+              (click)="openNewCustomer()"></button>
+    </div>
+  </div>
+
+  <p-table [value]="filteredCustomers" class ="p-datatable-sm" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr class="text-xs uppercase">
+        <th>Cod</th>
+        <th>Razão Social</th>
+        <th>Fantasia</th>
+        <th>CNPJ</th>
+        <th>Cidade/UF</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-customer>
+      <tr class="text-sm">
+        <td class="font-mono">{{ customer.cli_codigo }}</td>
+        <td class="font-bold">{{ customer.cli_nome }}</td>
+        <td><span class="badge-category">{{ customer.cli_fantasia }}</span></td>
+        <td class="font-mono">{{ customer.cli_cnpj }}</td>
+        <td>{{ customer.cli_cidade }}/{{ customer.cli_estado }}</td>
+        <td class="text-500">{{ customer.cli_telefone }}</td>
+        <td>
+          <div class="flex gap-1">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                    (click)="openEditCustomer(customer)"></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                    (click)="deleteCustomer(customer)"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '850px' }" [closable]="false" [header]="dialogTitle">
+  <div class="p-2" [formGroup]="customerForm">
+    @if (errorMessage()) {
+      <div class="p-3 mb-4 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
+        <i class="pi pi-exclamation-circle mt-1"></i>
+        <span class="text-sm font-medium">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <p-tabs value="0">
+      <p-tablist>
+          <p-tab value="0">Identificação</p-tab>
+          <p-tab value="1">Endereço</p-tab>
+          <p-tab value="2">Fiscal / Financeiro</p-tab>
+          <p-tab value="3">Logística / Transp.</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+          <!-- ABA 1: Identificação -->
+          <p-tabpanel value="0">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid">
+                <div class="col-2 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Código</label>
+                  <input pInputText formControlName="cli_codigo" class="p-inputtext-sm font-mono bg-gray-100" readonly />
+                </div>
+                <div class="col-7 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Razão Social (cli_nome)</label>
+                  <input pInputText formControlName="cli_nome" class="p-inputtext-sm" placeholder="Nome Completo" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Tipo</label>
+                  <p-select [options]="tiposCliente" formControlName="cli_tipo" optionLabel="label" optionValue="value" class="w-full p-inputtext-sm"></p-select>
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fantasia (cli_fantasia)</label>
+                  <input pInputText formControlName="cli_fantasia" class="p-inputtext-sm" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CNPJ (cli_cnpj)</label>
+                  <input pInputText formControlName="cli_cnpj" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-5 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Inscrição Est. (cli_ie)</label>
+                  <input pInputText formControlName="cli_ie" class="p-inputtext-sm" />
+                </div>
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Contato (cli_contato)</label>
+                  <input pInputText formControlName="cli_contato" class="p-inputtext-sm" placeholder="Nome para contato" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Produtor (cli_produtor)</label>
+                  <input pInputText formControlName="cli_produtor" placeholder="S/N" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Email (cli_email)</label>
+                  <input pInputText formControlName="cli_email" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Telefone (cli_telefone)</label>
+                  <input pInputText formControlName="cli_telefone" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fax (cli_fax)</label>
+                  <input pInputText formControlName="cli_fax" class="p-inputtext-sm" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 2: Endereço -->
+          <p-tabpanel value="1">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid">
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CEP (cli_cep)</label>
+                  <input pInputText formControlName="cli_cep" class="p-inputtext-sm" />
+                </div>
+                <div class="col-7 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Endereço (cli_endereco)</label>
+                  <input pInputText formControlName="cli_endereco" class="p-inputtext-sm" />
+                </div>
+                <div class="col-2 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Nº (cli_numero)</label>
+                  <input pInputText formControlName="cli_numero" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Complemento (cli_complemento)</label>
+                  <input pInputText formControlName="cli_complemento" class="p-inputtext-sm" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Bairro (cli_bairro)</label>
+                  <input pInputText formControlName="cli_bairro" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cidade (cli_cidade)</label>
+                  <input pInputText formControlName="cli_cidade" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cód. Cidade (IBGE)</label>
+                  <input pInputText formControlName="cli_codcidade" class="p-inputtext-sm font-mono" />
+                </div>
+                <div class="col-2 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">UF</label>
+                  <input pInputText formControlName="cli_estado" class="p-inputtext-sm text-center" maxlength="2" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cód. País</label>
+                  <input pInputText formControlName="cli_codpais" class="p-inputtext-sm font-mono" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 3: Fiscal / Financeiro -->
+          <p-tabpanel value="2">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid">
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CFOP (cli_cfop)</label>
+                  <input pInputText formControlName="cli_cfop" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CST (cli_cst)</label>
+                  <input pInputText formControlName="cli_cst" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Série (cli_serie)</label>
+                  <input pInputText formControlName="cli_serie" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Espécie (cli_especie)</label>
+                  <input pInputText formControlName="cli_especie" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cód. Contábil (cli_contactb)</label>
+                  <input pInputText formControlName="cli_contactb" class="p-inputtext-sm" />
+                </div>
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cond. Pagto (cli_condpagto)</label>
+                  <input pInputText formControlName="cli_condpagto" class="p-inputtext-sm" />
+                </div>
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Comissão (cli_comissao)</label>
+                  <input pInputText formControlName="cli_comissao" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Praça (cli_praca)</label>
+                  <input pInputText formControlName="cli_praca" class="p-inputtext-sm" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Praça UF (cli_praca_uf)</label>
+                  <input pInputText formControlName="cli_praca_uf" class="p-inputtext-sm" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 4: Logística -->
+          <p-tabpanel value="3">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid">
+                <div class="col-9 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Transportadora (cli_transportadora)</label>
+                  <input pInputText formControlName="cli_transportadora" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Frete</label>
+                  <p-select [options]="opcoesFrete" formControlName="cli_frete" optionLabel="label" optionValue="value" class="w-full p-inputtext-sm"></p-select>
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Placa (cli_placa)</label>
+                  <input pInputText formControlName="cli_placa" class="p-inputtext-sm" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">UF Placa (cli_ufplaca)</label>
+                  <input pInputText formControlName="cli_ufplaca" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="border-top-1 border-200 pt-3 mt-1">
+                <label class="text-xs font-bold text-500 uppercase block mb-2">Dados Adicionais da Transportadora</label>
+                <div class="grid">
+                  <div class="col-4 flex flex-column gap-1.5">
+                    <label class="text-xs font-bold text-400">CNPJ Transp.</label>
+                    <input pInputText formControlName="cli_tr_cnpj" class="p-inputtext-sm" />
+                  </div>
+                  <div class="col-4 flex flex-column gap-1.5">
+                    <label class="text-xs font-bold text-400">IE Transp.</label>
+                    <input pInputText formControlName="cli_tr_ie" class="p-inputtext-sm" />
+                  </div>
+                  <div class="col-4 flex flex-column gap-1.5">
+                    <label class="text-xs font-bold text-400">Cidade Transp.</label>
+                    <input pInputText formControlName="cli_tr_cidade" class="p-inputtext-sm" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-column gap-1.5">
+                <label class="text-xs font-bold text-500 uppercase">Observação de Transporte</label>
+                <textarea pInputTextarea formControlName="cli_tr_observacao" rows="2" class="p-inputtext-sm"></textarea>
+              </div>
+            </div>
+          </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2 p-2">
+      <button pButton type="button" label="Cancelar" class="p-button-text p-button-secondary" (click)="closeDialog()"></button>
+      <button pButton type="button" label="Salvar" class="p-button-primary px-4" (click)="saveCustomer()"></button>
+    </div>
+  </ng-template>
+</p-dialog>
