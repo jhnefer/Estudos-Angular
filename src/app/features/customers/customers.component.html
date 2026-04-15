@@ -20,7 +20,7 @@
 
   <p-table [value]="filteredCustomers" class ="p-datatable-sm" [responsiveLayout]="'scroll'">
     <ng-template pTemplate="header">
-      <tr class="text-xs uppercase">
+      <tr>
         <th>Cod</th>
         <th>Razão Social</th>
         <th>Fantasia</th>
@@ -31,11 +31,11 @@
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-customer>
-      <tr class="text-sm">
-        <td class="font-mono">{{ customer.cli_codigo }}</td>
-        <td class="font-bold">{{ customer.cli_nome }}</td>
-        <td><span class="badge-category">{{ customer.cli_fantasia }}</span></td>
-        <td class="font-mono">{{ customer.cli_cnpj }}</td>
+      <tr>
+        <td>{{ customer.cli_codigo }}</td>
+        <td>{{ customer.cli_nome }}</td>
+        <td><span class="badge badge-primary">{{ customer.cli_fantasia }}</span></td>
+        <td>{{ customer.cli_cnpj }}</td>
         <td>{{ customer.cli_cidade }}/{{ customer.cli_estado }}</td>
         <td class="text-500">{{ customer.cli_telefone }}</td>
         <td>

@@ -44,7 +44,7 @@
           </span>
         </td>
         <td>
-          <span [class]="user.status === 'ativo' ? 'badge-success' : 'badge-secondary'">
+          <span class="badge" [class.badge-success]="user.status === 'ativo'" [class.badge-secondary]="user.status !== 'ativo'">
             {{ user.status }}
           </span>
         </td>
