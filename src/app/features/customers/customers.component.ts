@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -39,7 +39,63 @@ export class CustomersComponent {
   private customerService = inject(CustomerService);
 
   searchControl = new FormControl('');
-  customerForm: FormGroup;
+  
+  customerForm = this.fb.nonNullable.group({
+    // ABA 1: Identificação
+    cli_codigo: [{ value: 0, disabled: true }],
+    cli_nome: ['', [Validators.required]],
+    cli_fantasia: ['', [Validators.required]],
+    cli_cnpj: ['', [Validators.required]],
+    cli_ie: [''],
+    cli_contato: [''],
+    cli_email: ['', [Validators.email]],
+    cli_telefone: [''],
+    cli_fax: [''],
+    cli_tipo: ['J'],
+    cli_produtor: ['N'],
+
+    // ABA 2: Localização
+    cli_cep: ['', [Validators.required]],
+    cli_endereco: ['', [Validators.required]],
+    cli_numero: ['', [Validators.required]],
+    cli_complemento: [''],
+    cli_bairro: ['', [Validators.required]],
+    cli_cidade: ['', [Validators.required]],
+    cli_codcidade: [''],
+    cli_estado: ['', [Validators.required]],
+    cli_pais: ['BRASIL'],
+    cli_codpais: ['1058'],
+
+    // ABA 3: Fiscal / Financeiro
+    cli_cfop: [''],
+    cli_cst: [''],
+    cli_serie: [''],
+    cli_especie: [''],
+    cli_fiscal: [0],
+    cli_comissao: [0],
+    cli_condpagto: [null as number | null],
+    cli_praca: [''],
+    cli_praca_uf: [''],
+    cli_contactb: [''],
+    cli_peso_qual: [''],
+
+    // ABA 4: Logística / Transportadora
+    cli_transportadora: [''],
+    cli_frete: ['C'],
+    cli_placa: [''],
+    cli_ufplaca: [''],
+    cli_tr_cnpj: [''],
+    cli_tr_endereco: [''],
+    cli_tr_cidade: [''],
+    cli_tr_uf: [''],
+    cli_tr_ie: [''],
+    cli_tr_pedagio: [''],
+    cli_tr_observacao: [''],
+    cli_terminal: [null as number | null],
+    cli_pgs_fil: [0],
+    cli_pgs_cod: [0],
+    cli_pgs_estab: [0]
+  });
   
   dialogOpen = false;
   editingCustomer = signal<Customer | null>(null);
@@ -57,65 +113,6 @@ export class CustomersComponent {
 
   get allCustomers() {
     return this.customerService.customers;
-  }
-
-  constructor() {
-    this.customerForm = this.fb.group({
-      // ABA 1: Identificação
-      cli_codigo: [{ value: null, disabled: true }],
-      cli_nome: ['', [Validators.required]],
-      cli_fantasia: ['', [Validators.required]],
-      cli_cnpj: ['', [Validators.required]],
-      cli_ie: [''],
-      cli_contato: [''],
-      cli_email: ['', [Validators.email]],
-      cli_telefone: [''],
-      cli_fax: [''],
-      cli_tipo: ['J'],
-      cli_produtor: ['N'],
-
-      // ABA 2: Localização
-      cli_cep: ['', [Validators.required]],
-      cli_endereco: ['', [Validators.required]],
-      cli_numero: ['', [Validators.required]],
-      cli_complemento: [''],
-      cli_bairro: ['', [Validators.required]],
-      cli_cidade: ['', [Validators.required]],
-      cli_codcidade: [''],
-      cli_estado: ['', [Validators.required]],
-      cli_pais: ['BRASIL'],
-      cli_codpais: ['1058'],
-
-      // ABA 3: Fiscal / Financeiro
-      cli_cfop: [''],
-      cli_cst: [''],
-      cli_serie: [''],
-      cli_especie: [''],
-      cli_fiscal: [0],
-      cli_comissao: [0],
-      cli_condpagto: [null],
-      cli_praca: [''],
-      cli_praca_uf: [''],
-      cli_contactb: [''],
-      cli_peso_qual: [''],
-
-      // ABA 4: Logística / Transportadora
-      cli_transportadora: [''],
-      cli_frete: ['C'],
-      cli_placa: [''],
-      cli_ufplaca: [''],
-      cli_tr_cnpj: [''],
-      cli_tr_endereco: [''],
-      cli_tr_cidade: [''],
-      cli_tr_uf: [''],
-      cli_tr_ie: [''],
-      cli_tr_pedagio: [''],
-      cli_tr_observacao: [''],
-      cli_terminal: [null],
-      cli_pgs_fil: [0],
-      cli_pgs_cod: [0],
-      cli_pgs_estab: [0]
-    });
   }
 
   get filteredCustomers() {
@@ -168,9 +165,9 @@ export class CustomersComponent {
     const isNewCustomer = !this.editingCustomer();
 
     if (!isNewCustomer) {
-      this.customerService.updateCustomer(customerData);
+      this.customerService.updateCustomer(customerData as Customer);
     } else {
-      this.customerService.addCustomer(customerData);
+      this.customerService.addCustomer(customerData as Customer);
     }
 
     this.closeDialog();

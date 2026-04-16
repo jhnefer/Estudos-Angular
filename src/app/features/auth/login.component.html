@@ -1,15 +1,43 @@
-<div class="login-container">
-  <h2>Acesso ao Sistema</h2>
-  
-  <p>Estado atual: <strong>{{ authService.isLoggedIn() ? 'Logado' : 'Deslogado' }}</strong></p>
+<div class="flex align-items-center justify-content-center min-h-screen bg-gray-900 px-4">
+  <p-card [style]="{ width: '400px' }" styleClass="shadow-8 border-round-xl overflow-hidden">
+    <div class="text-center mb-5">
+      <i class="pi pi-bolt text-primary text-5xl mb-3"></i>
+      <div class="text-2xl font-bold text-900 mb-2">Bem-vindo ao ESTUDOS ERP</div>
+      <span class="text-600">Acesse sua conta para continuar</span>
+    </div>
 
-  @if (!authService.isLoggedIn()) {
-    <button class="login-btn" (click)="authService.login()">Fazer Login</button>
-  } @else {
-    <button class="logout-btn" (click)="authService.logout()">Fazer Logout</button>
-  }
+    <div class="flex flex-column gap-4">
+      <div class="p-3 border-round bg-blue-50 text-blue-700 border-1 border-blue-100 flex align-items-center gap-2">
+        <i class="pi pi-info-circle"></i>
+        <span class="text-sm font-medium">Estado: {{ authService.isLoggedIn() ? 'Logado' : 'Aguardando Login' }}</span>
+      </div>
 
-  <p style="font-size: 0.8rem; color: #666; margin-top: 1rem;">
-    * Use o botão acima para testar o acesso à rota de usuários.
-  </p>
+      @if (!authService.isLoggedIn()) {
+        <button pButton 
+                label="Entrar no Sistema" 
+                icon="pi pi-sign-in" 
+                class="w-full p-button-lg shadow-2"
+                (click)="handleLogin()"></button>
+      } @else {
+        <div class="flex flex-column gap-2">
+          <button pButton 
+                  label="Ir para Dashboard" 
+                  icon="pi pi-home" 
+                  class="w-full p-button-success"
+                  (click)="handleLogin()"></button>
+          <button pButton 
+                  label="Sair" 
+                  icon="pi pi-power-off" 
+                  class="w-full p-button-text p-button-secondary"
+                  (click)="handleLogout()"></button>
+        </div>
+      }
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="text-center text-500 text-xs mt-3">
+        &copy; 2026 Estudos Angular. Todos os direitos reservados.
+      </div>
+    </ng-template>
+  </p-card>
 </div>

@@ -1,1 +1,20 @@
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
 
+  <!-- Conteúdo -->
+  <div class="flex-1 flex flex-column bg-surface-50 overflow-y-auto">
+    <header class="bg-surface-0 border-bottom-1 border-surface-200 p-3 flex align-items-center justify-content-between">
+      <div class="flex align-items-center gap-3">
+        <span class="text-900 font-bold text-lg ml-2">Painel de Gestão</span>
+      </div>
+      <div class="flex align-items-center gap-2">
+        <p-avatar icon="pi pi-user" shape="circle" class="bg-primary text-white"></p-avatar>
+      </div>
+    </header>
+
+    <main class="p-4 md:p-5">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

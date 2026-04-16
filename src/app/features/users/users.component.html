@@ -6,37 +6,34 @@
     </div>
 
     <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
-      <!-- Busca com ícone usando Reactive Forms -->
       <p-iconfield iconPosition="left" class="w-full sm:w-20rem">
         <p-inputicon class="pi pi-search"></p-inputicon>
         <input pInputText type="text" [formControl]="searchControl" placeholder="Buscar por nome ou email..."
                class="w-full text-sm" />
       </p-iconfield>
       
-      <!-- Botão com tamanho controlado -->
       <button pButton type="button" icon="pi pi-plus" label="Novo Usuário" 
               class="p-button-primary w-full sm:w-auto"
               (click)="openNewUser()"></button>
     </div>
   </div>
 
-  <p-table [value]="filteredUsers" class ="p-datatable-sm">
+  <p-table [value]="filteredUsers" class="p-datatable-sm" [responsiveLayout]="'scroll'">
     <ng-template pTemplate="header">
       <tr>
-        <th>ID</th>
+        <th style="width: 80px">ID</th>
         <th>Nome</th>
         <th>Email</th>
         <th>Perfil</th>
         <th>Status</th>
-        <th>Último Login</th>
-        <th>Ações</th>
+        <th style="width: 120px" class="text-center">Ações</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-user>
       <tr>
         <td>{{ user.id }}</td>
-        <td>{{ user.name }}</td>
-        <td>{{ user.email }}</td>
+        <td class="font-medium">{{ user.name }}</td>
+        <td class="text-500">{{ user.email }}</td>
         <td>
           <span class="badge {{ getRoleLabel(user.role).color }}">
             <i [class]="'pi ' + getRoleLabel(user.role).icon"></i>
@@ -48,12 +45,13 @@
             {{ user.status }}
           </span>
         </td>
-        <td class="text-xs text-muted-foreground">{{ user.lastLogin }}</td>
-        <td>
-          <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text"
-                  (click)="openEditUser(user)"></button>
-          <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
-                  (click)="deleteUser(user)"></button>
+        <td class="text-center">
+          <div class="flex justify-content-center gap-1">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm p-button-secondary"
+                    (click)="openEditUser(user)"></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                    (click)="deleteUser(user)"></button>
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -61,64 +59,35 @@
 </div>
 
 <p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '600px' }" [closable]="false" [header]="dialogTitle">
-  <div class="flex flex-column gap-4 p-4" [formGroup]="userForm">
-    <!-- Mensagem de Erro -->
+  <div class="p-3" [formGroup]="userForm">
     @if (errorMessage()) {
-      <div class="p-3 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
+      <div class="p-3 mb-4 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
         <i class="pi pi-exclamation-circle mt-1"></i>
         <span class="text-sm font-medium">{{ errorMessage() }}</span>
       </div>
     }
 
-    <!-- Nome Completo -->
-    <div class="flex flex-column gap-2">
-      <label for="name" class="text-xs font-bold uppercase text-500">Nome Completo</label>
-      <input pInputText id="name" type="text" formControlName="name" placeholder="Ex: João Silva" class="w-full" 
-             [class.ng-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched" />
-      @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
-        <small class="text-red-500">
-          Nome é obrigatório (mín. 3 caracteres).
-        </small>
-      }
-    </div>
-
-    <!-- E-mail -->
-    <div class="flex flex-column gap-2">
-      <label for="email" class="text-xs font-bold uppercase text-500">E-mail</label>
-      <input pInputText id="email" type="email" formControlName="email" placeholder="usuario@exemplo.com" class="w-full"
-             [class.ng-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched" />
-      @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
-        <small class="text-red-500">
-          Insira um e-mail válido.
-        </small>
-      }
-    </div>
-
-    <!-- Grid Perfil e Status -->
-    <div class="grid">
-      <div class="col-6 flex flex-column gap-2">
-        <label for="role" class="text-xs font-bold uppercase text-500">Perfil</label>
-        <p-select id="role" [options]="roles" formControlName="role" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
+    <div class="grid p-fluid">
+      <div class="col-12 flex flex-column gap-1.5 mb-3">
+        <label class="text-xs font-bold uppercase text-500">Nome Completo</label>
+        <input pInputText type="text" formControlName="name" placeholder="Ex: João Silva" class="p-inputtext-sm" 
+               [class.ng-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched" />
       </div>
-      <div class="col-6 flex flex-column gap-2">
-        <label for="status" class="text-xs font-bold uppercase text-500">Status</label>
-        <p-select id="status" [options]="statuses" formControlName="status" optionLabel="label" optionValue="value" placeholder="Selecione" class="w-full"></p-select>
-      </div>
-    </div>
 
-    <!-- Senha -->
-    <div class="flex flex-column gap-2">
-      <label for="password" class="text-xs font-bold uppercase text-500">Senha</label>
-      <input pInputText id="password" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" class="w-full"
-             [class.ng-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched" />
-      @if (editingUser()) {
-        <small class="text-xs text-500">Deixe em branco para manter a atual.</small>
-      }
-      @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-        <small class="text-red-500">
-          Senha deve ter no mínimo 6 caracteres.
-        </small>
-      }
+      <div class="col-12 flex flex-column gap-1.5 mb-3">
+        <label class="text-xs font-bold uppercase text-500">E-mail</label>
+        <input pInputText type="email" formControlName="email" placeholder="usuario@exemplo.com" class="p-inputtext-sm"
+               [class.ng-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched" />
+      </div>
+
+      <div class="col-6 flex flex-column gap-1.5">
+        <label class="text-xs font-bold uppercase text-500">Perfil</label>
+        <p-select [options]="roles" formControlName="role" optionLabel="label" optionValue="value" size="small" placeholder="Selecione" class="w-full"></p-select>
+      </div>
+      <div class="col-6 flex flex-column gap-1.5">
+        <label class="text-xs font-bold uppercase text-500">Status</label>
+        <p-select [options]="statuses" formControlName="status" optionLabel="label" optionValue="value" size="small" placeholder="Selecione" class="w-full"></p-select>
+      </div>
     </div>
   </div>
 

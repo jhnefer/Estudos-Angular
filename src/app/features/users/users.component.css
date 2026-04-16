@@ -22,3 +22,14 @@
 .text-primary { color: var(--p-primary-500); }
 .text-info { color: var(--p-blue-500); }
 .text-muted-foreground { color: var(--p-surface-500); }
+
+/* Arredondamento da Tabela */
+:host ::ng-deep .p-datatable {
+  border: 1px solid var(--p-surface-200);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: transparent !important;
+}

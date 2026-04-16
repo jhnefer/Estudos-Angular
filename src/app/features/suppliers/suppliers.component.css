@@ -1,4 +1,4 @@
-/* Customers Component Styles */
+/* Suppliers Component Styles */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -14,8 +14,18 @@
   color: var(--p-primary-700);
 }
 
-.text-dense {
-  line-height: 1.2;
+.badge-success {
+  background-color: var(--p-emerald-100);
+  color: var(--p-emerald-700);
+}
+
+.badge-secondary {
+  background-color: var(--p-surface-100);
+  color: var(--p-surface-700);
+}
+
+.text-muted-foreground {
+  color: var(--p-surface-500);
 }
 
 /* Arredondamento da Tabela */
@@ -26,6 +36,5 @@
 }
 
 :host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
-  padding: 0.75rem 1rem;
   background-color: transparent !important;
 }

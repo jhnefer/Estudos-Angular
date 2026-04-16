@@ -18,29 +18,29 @@
     </div>
   </div>
 
-  <p-table [value]="filteredCustomers" class ="p-datatable-sm" [responsiveLayout]="'scroll'">
+  <p-table [value]="filteredCustomers" class="p-datatable-sm" [responsiveLayout]="'scroll'" [paginator]="true" [rows]="10">
     <ng-template pTemplate="header">
       <tr>
-        <th>Cod</th>
+        <th style="width: 80px">Cod</th>
         <th>Razão Social</th>
         <th>Fantasia</th>
         <th>CNPJ</th>
         <th>Cidade/UF</th>
         <th>Telefone</th>
-        <th>Ações</th>
+        <th style="width: 120px" class="text-center">Ações</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-customer>
       <tr>
         <td>{{ customer.cli_codigo }}</td>
-        <td>{{ customer.cli_nome }}</td>
+        <td class="font-medium">{{ customer.cli_nome }}</td>
         <td><span class="badge badge-primary">{{ customer.cli_fantasia }}</span></td>
-        <td>{{ customer.cli_cnpj }}</td>
+        <td class="text-500">{{ customer.cli_cnpj }}</td>
         <td>{{ customer.cli_cidade }}/{{ customer.cli_estado }}</td>
         <td class="text-500">{{ customer.cli_telefone }}</td>
-        <td>
-          <div class="flex gap-1">
-            <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+        <td class="text-center">
+          <div class="flex justify-content-center gap-1">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm p-button-secondary"
                     (click)="openEditCustomer(customer)"></button>
             <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
                     (click)="deleteCustomer(customer)"></button>
@@ -52,7 +52,7 @@
 </div>
 
 <p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '850px' }" [closable]="false" [header]="dialogTitle">
-  <div class="p-2" [formGroup]="customerForm">
+  <div class="p-3" [formGroup]="customerForm">
     @if (errorMessage()) {
       <div class="p-3 mb-4 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
         <i class="pi pi-exclamation-circle mt-1"></i>
@@ -71,58 +71,58 @@
           <!-- ABA 1: Identificação -->
           <p-tabpanel value="0">
             <div class="flex flex-column gap-3 pt-3">
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-2 flex flex-column gap-1.5">
                   <label class="text-xs font-bold text-500 uppercase">Código</label>
                   <input pInputText formControlName="cli_codigo" class="p-inputtext-sm font-mono bg-gray-100" readonly />
                 </div>
                 <div class="col-7 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Razão Social (cli_nome)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Razão Social</label>
                   <input pInputText formControlName="cli_nome" class="p-inputtext-sm" placeholder="Nome Completo" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
                   <label class="text-xs font-bold text-500 uppercase">Tipo</label>
-                  <p-select [options]="tiposCliente" formControlName="cli_tipo" optionLabel="label" optionValue="value" class="w-full p-inputtext-sm"></p-select>
+                  <p-select [options]="tiposCliente" formControlName="cli_tipo" optionLabel="label" optionValue="value" size="small" class="w-full"></p-select>
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Fantasia (cli_fantasia)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Fantasia</label>
                   <input pInputText formControlName="cli_fantasia" class="p-inputtext-sm" />
                 </div>
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">CNPJ (cli_cnpj)</label>
+                  <label class="text-xs font-bold text-500 uppercase">CNPJ</label>
                   <input pInputText formControlName="cli_cnpj" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-5 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Inscrição Est. (cli_ie)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Inscrição Est.</label>
                   <input pInputText formControlName="cli_ie" class="p-inputtext-sm" />
                 </div>
                 <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Contato (cli_contato)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Contato</label>
                   <input pInputText formControlName="cli_contato" class="p-inputtext-sm" placeholder="Nome para contato" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Produtor (cli_produtor)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Produtor</label>
                   <input pInputText formControlName="cli_produtor" placeholder="S/N" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Email (cli_email)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Email</label>
                   <input pInputText formControlName="cli_email" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Telefone (cli_telefone)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Telefone</label>
                   <input pInputText formControlName="cli_telefone" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Fax (cli_fax)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Fax</label>
                   <input pInputText formControlName="cli_fax" class="p-inputtext-sm" />
                 </div>
               </div>
@@ -132,35 +132,35 @@
           <!-- ABA 2: Endereço -->
           <p-tabpanel value="1">
             <div class="flex flex-column gap-3 pt-3">
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">CEP (cli_cep)</label>
+                  <label class="text-xs font-bold text-500 uppercase">CEP</label>
                   <input pInputText formControlName="cli_cep" class="p-inputtext-sm" />
                 </div>
                 <div class="col-7 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Endereço (cli_endereco)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Endereço</label>
                   <input pInputText formControlName="cli_endereco" class="p-inputtext-sm" />
                 </div>
                 <div class="col-2 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Nº (cli_numero)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Nº</label>
                   <input pInputText formControlName="cli_numero" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Complemento (cli_complemento)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Complemento</label>
                   <input pInputText formControlName="cli_complemento" class="p-inputtext-sm" />
                 </div>
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Bairro (cli_bairro)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Bairro</label>
                   <input pInputText formControlName="cli_bairro" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Cidade (cli_cidade)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Cidade</label>
                   <input pInputText formControlName="cli_cidade" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
@@ -182,47 +182,47 @@
           <!-- ABA 3: Fiscal / Financeiro -->
           <p-tabpanel value="2">
             <div class="flex flex-column gap-3 pt-3">
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">CFOP (cli_cfop)</label>
+                  <label class="text-xs font-bold text-500 uppercase">CFOP</label>
                   <input pInputText formControlName="cli_cfop" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">CST (cli_cst)</label>
+                  <label class="text-xs font-bold text-500 uppercase">CST</label>
                   <input pInputText formControlName="cli_cst" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Série (cli_serie)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Série</label>
                   <input pInputText formControlName="cli_serie" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Espécie (cli_especie)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Espécie</label>
                   <input pInputText formControlName="cli_especie" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Cód. Contábil (cli_contactb)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Cód. Contábil</label>
                   <input pInputText formControlName="cli_contactb" class="p-inputtext-sm" />
                 </div>
                 <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Cond. Pagto (cli_condpagto)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Cond. Pagto</label>
                   <input pInputText formControlName="cli_condpagto" class="p-inputtext-sm" />
                 </div>
                 <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Comissão (cli_comissao)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Comissão</label>
                   <input pInputText formControlName="cli_comissao" class="p-inputtext-sm" />
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Praça (cli_praca)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Praça</label>
                   <input pInputText formControlName="cli_praca" class="p-inputtext-sm" />
                 </div>
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Praça UF (cli_praca_uf)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Praça UF</label>
                   <input pInputText formControlName="cli_praca_uf" class="p-inputtext-sm" />
                 </div>
               </div>
@@ -232,31 +232,31 @@
           <!-- ABA 4: Logística -->
           <p-tabpanel value="3">
             <div class="flex flex-column gap-3 pt-3">
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-9 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Transportadora (cli_transportadora)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Transportadora</label>
                   <input pInputText formControlName="cli_transportadora" class="p-inputtext-sm" />
                 </div>
                 <div class="col-3 flex flex-column gap-1.5">
                   <label class="text-xs font-bold text-500 uppercase">Frete</label>
-                  <p-select [options]="opcoesFrete" formControlName="cli_frete" optionLabel="label" optionValue="value" class="w-full p-inputtext-sm"></p-select>
+                  <p-select [options]="opcoesFrete" formControlName="cli_frete" optionLabel="label" optionValue="value" size="small" class="w-full"></p-select>
                 </div>
               </div>
 
-              <div class="grid">
+              <div class="grid p-fluid">
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Placa (cli_placa)</label>
+                  <label class="text-xs font-bold text-500 uppercase">Placa</label>
                   <input pInputText formControlName="cli_placa" class="p-inputtext-sm" />
                 </div>
                 <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">UF Placa (cli_ufplaca)</label>
+                  <label class="text-xs font-bold text-500 uppercase">UF Placa</label>
                   <input pInputText formControlName="cli_ufplaca" class="p-inputtext-sm" />
                 </div>
               </div>
 
               <div class="border-top-1 border-200 pt-3 mt-1">
-                <label class="text-xs font-bold text-500 uppercase block mb-2">Dados Adicionais da Transportadora</label>
-                <div class="grid">
+                <label class="text-xs font-bold text-500 uppercase block mb-2 text-primary">Dados Adicionais da Transportadora</label>
+                <div class="grid p-fluid">
                   <div class="col-4 flex flex-column gap-1.5">
                     <label class="text-xs font-bold text-400">CNPJ Transp.</label>
                     <input pInputText formControlName="cli_tr_cnpj" class="p-inputtext-sm" />

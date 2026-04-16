@@ -1,24 +1,32 @@
 import { Routes } from '@angular/router';
-import { authGuard } from '../guards';
+import { MainLayoutComponent } from '../layout/main-layout/main-layout.component';
 
 export const routes: Routes = [
     {
-      path: 'login',
-      loadComponent: () => import('../../features/auth/login.component').then(m => m.LoginComponent)
-    },
-    {
-      path: 'usuarios',
-      canActivate: [authGuard],
-      loadComponent: () => import('../../features/users/users.component').then(m => m.UsersComponent)
-    },
-    {
-      path: 'clientes',
-      canActivate: [authGuard],
-      loadComponent: () => import('../../features/customers/customers.component').then(m => m.CustomersComponent)
-    },
-    {
       path: '',
-      redirectTo: 'login',
-      pathMatch: 'full'
+      component: MainLayoutComponent,
+      children: [
+        {
+          path: 'users',
+          loadComponent: () => import('../../features/users/users.component').then(m => m.UsersComponent)
+        },
+        {
+          path: 'customers',
+          loadComponent: () => import('../../features/customers/customers.component').then(m => m.CustomersComponent)
+        },
+        {
+          path: 'suppliers',
+          loadComponent: () => import('../../features/suppliers/suppliers.component').then(m => m.SuppliersComponent)
+        },
+        {
+          path: '',
+          redirectTo: 'users',
+          pathMatch: 'full'
+        }
+      ]
+    },
+    {
+      path: '**',
+      redirectTo: 'users'
     }
 ];

@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -30,7 +30,15 @@ export class UsersComponent {
   private userService = inject(UserService);
 
   searchControl = new FormControl('');
-  userForm: FormGroup;
+  
+  userForm = this.fb.nonNullable.group({
+    id: [0],
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    email: ['', [Validators.required, Validators.email]],
+    role: ['operador' as AppUser['role'], Validators.required],
+    status: ['ativo' as AppUser['status'], Validators.required],
+    password: ['']
+  });
   
   dialogOpen = false;
   editingUser = signal<AppUser | null>(null);
@@ -52,17 +60,6 @@ export class UsersComponent {
   ];
 
   roleLabels = roleLabels;
-
-  constructor() {
-    this.userForm = this.fb.group({
-      id: [0],
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      role: ['operador', Validators.required],
-      status: ['ativo', Validators.required],
-      password: ['']
-    });
-  }
 
   get filteredUsers() {
     const searchTerm = (this.searchControl.value || '').toLowerCase();
@@ -125,7 +122,7 @@ export class UsersComponent {
       return;
     }
 
-    const userData = this.userForm.value;
+    const userData = this.userForm.getRawValue();
     const isNewUser = !this.editingUser();
 
     this.errorMessage.set(null);

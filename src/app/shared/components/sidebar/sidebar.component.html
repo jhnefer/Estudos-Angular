@@ -1,1 +1,31 @@
+<div class="h-screen flex flex-column bg-neutral-900 shadow-2 sidebar-border">
+  <!-- Header / Logo -->
+  <div class="flex align-items-center justify-content-center p-5">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-bolt text-4xl text-emerald-500"></i>
+      <span class="text-2xl font-bold tracking-tight text-white">ESTUDOS ERP</span>
+    </div>
+  </div>
 
+  <!-- Menu Items -->
+  <nav class="flex-grow-1 overflow-y-auto px-3">
+    <ul class="list-none p-0 m-0">
+      @for (item of menuItems; track item.label) {
+        <li class="mb-2">
+          <a [routerLink]="item.routerLink" 
+             routerLinkActive="active-menu-item"
+             pRipple
+             class="flex align-items-center p-3 border-round text-gray-400 hover:text-white hover:bg-white-alpha-10 transition-duration-200 cursor-pointer no-underline gap-3">
+            <i [class]="item.icon + ' text-xl'"></i>
+            <span class="font-medium">{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Footer Simples -->
+  <div class="p-4 text-center border-top-1 border-white-alpha-10">
+    <span class="text-xs text-gray-500 font-semibold uppercase tracking-widest">Versão 1.0.0</span>
+  </div>
+</div>

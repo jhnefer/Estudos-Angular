@@ -1,0 +1,261 @@
+<div class="flex flex-column gap-4 mb-5">
+  <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold m-0 text-900">Gestão de Fornecedores</h1>
+      <p class="text-sm text-500 m-0">{{ filteredSuppliers().length }} fornecedores cadastrados</p>
+    </div>
+
+    <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
+      <p-iconfield iconPosition="left" class="w-full sm:w-20rem">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input pInputText type="text" [formControl]="searchControl" placeholder="Buscar por nome, fantasia ou CNPJ..."
+               class="w-full text-sm" />
+      </p-iconfield>
+      
+      <button pButton type="button" icon="pi pi-plus" label="Novo Fornecedor" 
+              class="p-button-primary w-full sm:w-auto"
+              (click)="openNewSupplier()"></button>
+    </div>
+  </div>
+
+  <p-table [value]="filteredSuppliers()" class="p-datatable-sm" [responsiveLayout]="'scroll'" [paginator]="true" [rows]="10">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 80px">Código</th>
+        <th>Razão Social</th>
+        <th>Nome Fantasia</th>
+        <th>CNPJ</th>
+        <th>Cidade/UF</th>
+        <th>Pessoa de Contato</th>
+        <th style="width: 120px" class="text-center">Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-supplier>
+      <tr>
+        <td>{{ supplier.for_codigo }}</td>
+        <td>{{ supplier.for_nome }}</td>
+        <td><span class="badge badge-primary">{{ supplier.for_fantasia }}</span></td>
+        <td>{{ supplier.for_cnpj }}</td>
+        <td>{{ supplier.for_cidade }} / {{ supplier.for_estado }}</td>
+        <td class="text-500">{{ supplier.for_contato }}</td>
+        <td class="text-center">
+          <div class="flex justify-content-center gap-1">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm p-button-secondary"
+                    (click)="openEditSupplier(supplier)"></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                    (click)="deleteSupplier(supplier)"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [style]="{ width: '850px' }" [closable]="false" [header]="dialogTitle">
+  <div class="p-3" [formGroup]="supplierForm">
+    @if (errorMessage()) {
+      <div class="p-3 mb-4 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
+        <i class="pi pi-exclamation-circle mt-1"></i>
+        <span class="text-sm font-medium">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <p-tabs value="0">
+      <p-tablist>
+          <p-tab value="0">Identificação Principal</p-tab>
+          <p-tab value="1">Endereço e Localização</p-tab>
+          <p-tab value="2">Comunicação e Contato</p-tab>
+          <p-tab value="3">Config. Fiscais e Obs.</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+          <!-- ABA 1: Identificação Principal -->
+          <p-tabpanel value="0">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid p-fluid align-items-start">
+                <div class="col-2 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Código</label>
+                  <input pInputText formControlName="for_codigo" class="p-inputtext-sm font-mono bg-gray-100" readonly />
+                </div>
+                <div class="col-7 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Razão Social *</label>
+                  <input pInputText formControlName="for_nome" class="p-inputtext-sm" maxlength="45" placeholder="Nome oficial registrado" 
+                         [class.ng-invalid]="supplierForm.get('for_nome')?.invalid && supplierForm.get('for_nome')?.touched" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Tipo *</label>
+                  <p-select [options]="types" formControlName="for_tipo" optionLabel="label" optionValue="value" 
+                            size="small" class="w-full" placeholder="Selecione"
+                            [class.ng-invalid]="supplierForm.get('for_tipo')?.invalid && supplierForm.get('for_tipo')?.touched"></p-select>
+                </div>
+              </div>
+
+              <div class="grid p-fluid align-items-start">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Nome Fantasia *</label>
+                  <input pInputText formControlName="for_fantasia" class="p-inputtext-sm" maxlength="20" placeholder="Nome comercial"
+                         [class.ng-invalid]="supplierForm.get('for_fantasia')?.invalid && supplierForm.get('for_fantasia')?.touched" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CNPJ *</label>
+                  <p-inputmask formControlName="for_cnpj" mask="99.999.999/9999-99" [unmask]="false" styleClass="w-full p-inputtext-sm" placeholder="00.000.000/0000-00"
+                               [class.ng-invalid]="supplierForm.get('for_cnpj')?.invalid && supplierForm.get('for_cnpj')?.touched"></p-inputmask>
+                </div>
+              </div>
+
+              <div class="grid p-fluid align-items-start">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Inscrição Estadual *</label>
+                  <input pInputText formControlName="for_ie" class="p-inputtext-sm" maxlength="15" placeholder="Registro tributário"
+                         [class.ng-invalid]="supplierForm.get('for_ie')?.invalid && supplierForm.get('for_ie')?.touched" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 2: Endereço e Localização -->
+          <p-tabpanel value="1">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid p-fluid align-items-start">
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">CEP *</label>
+                  <p-inputmask formControlName="for_cep" mask="99999-999" [unmask]="false" styleClass="w-full p-inputtext-sm" placeholder="00000-000"
+                               [class.ng-invalid]="supplierForm.get('for_cep')?.invalid && supplierForm.get('for_cep')?.touched"></p-inputmask>
+                </div>
+                <div class="col-8 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Logradouro *</label>
+                  <input pInputText formControlName="for_endereco" class="p-inputtext-sm" maxlength="45" placeholder="Rua, Av ou Praça"
+                         [class.ng-invalid]="supplierForm.get('for_endereco')?.invalid && supplierForm.get('for_endereco')?.touched" />
+                </div>
+              </div>
+
+              <div class="grid p-fluid align-items-start">
+                <div class="col-2 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Número *</label>
+                  <input pInputText formControlName="for_numero" class="p-inputtext-sm" maxlength="5" 
+                         [class.ng-invalid]="supplierForm.get('for_numero')?.invalid && supplierForm.get('for_numero')?.touched" />
+                </div>
+                <div class="col-5 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Complemento</label>
+                  <input pInputText formControlName="for_complemento" class="p-inputtext-sm" maxlength="30" placeholder="Apto, Sala, etc" />
+                </div>
+                <div class="col-5 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Bairro *</label>
+                  <input pInputText formControlName="for_bairro" class="p-inputtext-sm" maxlength="20" 
+                         [class.ng-invalid]="supplierForm.get('for_bairro')?.invalid && supplierForm.get('for_bairro')?.touched" />
+                </div>
+              </div>
+
+              <div class="grid p-fluid align-items-start">
+                <div class="col-5 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cidade *</label>
+                  <input pInputText formControlName="for_cidade" class="p-inputtext-sm" maxlength="30" 
+                         [class.ng-invalid]="supplierForm.get('for_cidade')?.invalid && supplierForm.get('for_cidade')?.touched" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Estado (UF) *</label>
+                  <p-select [options]="states" formControlName="for_estado" optionLabel="label" optionValue="value" [filter]="true" 
+                            size="small" class="w-full" placeholder="UF"
+                            [class.ng-invalid]="supplierForm.get('for_estado')?.invalid && supplierForm.get('for_estado')?.touched"></p-select>
+                </div>
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">País *</label>
+                  <input pInputText formControlName="for_pais" class="p-inputtext-sm" maxlength="30" 
+                         [class.ng-invalid]="supplierForm.get('for_pais')?.invalid && supplierForm.get('for_pais')?.touched" />
+                </div>
+              </div>
+
+              <div class="grid p-fluid align-items-start">
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Código do País *</label>
+                  <input pInputText formControlName="for_codpais" class="p-inputtext-sm" maxlength="4" placeholder="Ex: 1058"
+                         [class.ng-invalid]="supplierForm.get('for_codpais')?.invalid && supplierForm.get('for_codpais')?.touched" />
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Praça *</label>
+                  <input pInputText formControlName="for_praca" class="p-inputtext-sm" maxlength="30" 
+                         [class.ng-invalid]="supplierForm.get('for_praca')?.invalid && supplierForm.get('for_praca')?.touched" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Praça UF *</label>
+                  <input pInputText formControlName="for_praca_uf" class="p-inputtext-sm" maxlength="2" 
+                         [class.ng-invalid]="supplierForm.get('for_praca_uf')?.invalid && supplierForm.get('for_praca_uf')?.touched" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 3: Comunicação e Contato -->
+          <p-tabpanel value="2">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid p-fluid align-items-start">
+                <div class="col-12 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">E-mail *</label>
+                  <input pInputText formControlName="for_email" class="p-inputtext-sm" maxlength="50" placeholder="exemplo@email.com" 
+                         [class.ng-invalid]="supplierForm.get('for_email')?.invalid && supplierForm.get('for_email')?.touched" />
+                </div>
+              </div>
+              <div class="grid p-fluid align-items-start">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Telefone *</label>
+                  <p-inputmask formControlName="for_telefone" mask="(99)99999-9999" [unmask]="false" styleClass="w-full p-inputtext-sm" placeholder="(00)00000-0000"
+                               [class.ng-invalid]="supplierForm.get('for_telefone')?.invalid && supplierForm.get('for_telefone')?.touched"></p-inputmask>
+                </div>
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fax</label>
+                  <p-inputmask formControlName="for_fax" mask="(99)99999-9999" [unmask]="false" styleClass="w-full p-inputtext-sm" placeholder="(00)00000-0000"></p-inputmask>
+                </div>
+                <div class="col-12 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Pessoa de Contato *</label>
+                  <input pInputText formControlName="for_contato" class="p-inputtext-sm" maxlength="30" placeholder="Nome do representante" 
+                         [class.ng-invalid]="supplierForm.get('for_contato')?.invalid && supplierForm.get('for_contato')?.touched" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA 4: Config. Fiscais e Obs. -->
+          <p-tabpanel value="3">
+            <div class="flex flex-column gap-3 pt-3">
+              <div class="grid p-fluid align-items-start">
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fiscal *</label>
+                  <input pInputText formControlName="for_fiscal" class="p-inputtext-sm" maxlength="2" 
+                         [class.ng-invalid]="supplierForm.get('for_fiscal')?.invalid && supplierForm.get('for_fiscal')?.touched" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Produtor *</label>
+                  <p-select [options]="produtorOptions" formControlName="for_produtor" optionLabel="label" optionValue="value" 
+                            size="small" class="w-full"
+                            [class.ng-invalid]="supplierForm.get('for_produtor')?.invalid && supplierForm.get('for_produtor')?.touched"></p-select>
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Código Contábil *</label>
+                  <input pInputText formControlName="for_contactb" class="p-inputtext-sm" maxlength="6" 
+                         [class.ng-invalid]="supplierForm.get('for_contactb')?.invalid && supplierForm.get('for_contactb')?.touched" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Série *</label>
+                  <input pInputText formControlName="for_serie" class="p-inputtext-sm" maxlength="3" 
+                         [class.ng-invalid]="supplierForm.get('for_serie')?.invalid && supplierForm.get('for_serie')?.touched" />
+                </div>
+              </div>
+              <div class="grid p-fluid align-items-start">
+                <div class="col-12 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Observações </label>
+                  <textarea pInputTextarea formControlName="for_obs" rows="3" class="p-inputtext-sm" maxlength="55"
+                            [class.ng-invalid]="supplierForm.get('for_obs')?.invalid && supplierForm.get('for_obs')?.touched"></textarea>
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2 p-2">
+      <button pButton type="button" label="Cancelar" class="p-button-text p-button-secondary" (click)="closeDialog()"></button>
+      <button pButton type="button" label="Salvar Fornecedor" class="p-button-primary px-4" (click)="saveSupplier()"></button>
+    </div>
+  </ng-template>
+</p-dialog>

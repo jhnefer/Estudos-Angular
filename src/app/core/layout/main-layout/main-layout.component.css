@@ -1,1 +1,12 @@
+:host {
+  display: block;
+  width: 100%;
+}
 
+.flex-grow-1 {
+  overflow-x: hidden;
+}
+
+main {
+  min-width: 0; /* Impede que o conteúdo flexível quebre o layout */
+}

@@ -31,7 +31,8 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       theme: {
         preset: MyCustomPreset
-      }
+      },
+      ripple: true
     }),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes)

@@ -1,1 +1,32 @@
+:host {
+  display: block;
+  height: 100vh;
+}
 
+.sidebar-border {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.active-menu-item {
+  background-color: var(--p-primary-500) !important;
+  color: #ffffff !important;
+}
+
+.active-menu-item i {
+  color: #ffffff !important;
+}
+
+/* Forçar o ripple a aparecer no link */
+:host ::ng-deep .p-ripple {
+  overflow: hidden;
+  position: relative;
+}
+
+nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}

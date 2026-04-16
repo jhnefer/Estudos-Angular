@@ -10,7 +10,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Redireciona para a home caso o usuário não esteja logado
-  router.navigate(['/']);
+  // Redireciona para o login caso o usuário não esteja autenticado
+  router.navigate(['/login']);
   return false;
 };
