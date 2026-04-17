@@ -21,7 +21,7 @@ export interface Customer {
   cli_praca_uf: string;
   cli_contato: string;
   cli_fiscal: number;
-  cli_tipo: string;
+  cli_tipo: 'J' | 'F';
   cli_especie: string;
   cli_pgs_fil: number;
   cli_pgs_cod: number;
@@ -33,7 +33,7 @@ export interface Customer {
   cli_contactb: string;
   cli_terminal: number;
   cli_transportadora: string;
-  cli_frete: string;
+  cli_frete: 'C' | 'F';
   cli_placa: string;
   cli_ufplaca: string;
   cli_tr_cnpj: string;
@@ -43,7 +43,7 @@ export interface Customer {
   cli_tr_ie: string;
   cli_tr_observacao: string;
   cli_tr_pedagio: string;
-  cli_produtor: string;
+  cli_produtor: 'S' | 'N';
   cli_comissao: number;
-  cli_condpagto: number;
+  cli_condpagto: number | null;
 }

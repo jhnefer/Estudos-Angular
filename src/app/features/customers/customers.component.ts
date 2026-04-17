@@ -1,6 +1,8 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -11,8 +13,11 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { TabsModule } from 'primeng/tabs';
 import { TextareaModule } from 'primeng/textarea';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { CustomerService } from '../../core/services';
 import { Customer } from '../../shared/models';
+import { COUNTRY, CUSTOMER_TYPE, FREIGHT_TYPE, PRODUCER_TYPE } from '../../shared/constants/domain.constants';
 
 @Component({
   standalone: true,
@@ -36,10 +41,16 @@ import { Customer } from '../../shared/models';
 })
 export class CustomersComponent {
   private fb = inject(FormBuilder);
-  private customerService = inject(CustomerService);
+  public customerService = inject(CustomerService);
+  private confirmationService = inject(ConfirmationService);
 
   searchControl = new FormControl('');
   
+  private searchTerm = toSignal(
+    this.searchControl.valueChanges.pipe(startWith('')),
+    { initialValue: '' }
+  );
+
   customerForm = this.fb.nonNullable.group({
     // ABA 1: Identificação
     cli_codigo: [{ value: 0, disabled: true }],
@@ -51,8 +62,8 @@ export class CustomersComponent {
     cli_email: ['', [Validators.email]],
     cli_telefone: [''],
     cli_fax: [''],
-    cli_tipo: ['J'],
-    cli_produtor: ['N'],
+    cli_tipo: [CUSTOMER_TYPE.JURIDICAL as Customer['cli_tipo']],
+    cli_produtor: [PRODUCER_TYPE.NO as Customer['cli_produtor']],
 
     // ABA 2: Localização
     cli_cep: ['', [Validators.required]],
@@ -63,8 +74,8 @@ export class CustomersComponent {
     cli_cidade: ['', [Validators.required]],
     cli_codcidade: [''],
     cli_estado: ['', [Validators.required]],
-    cli_pais: ['BRASIL'],
-    cli_codpais: ['1058'],
+    cli_pais: [COUNTRY.BRAZIL_NAME as string],
+    cli_codpais: [COUNTRY.BRAZIL_CODE as string],
 
     // ABA 3: Fiscal / Financeiro
     cli_cfop: [''],
@@ -81,7 +92,7 @@ export class CustomersComponent {
 
     // ABA 4: Logística / Transportadora
     cli_transportadora: [''],
-    cli_frete: ['C'],
+    cli_frete: [FREIGHT_TYPE.CIF as Customer['cli_frete']],
     cli_placa: [''],
     cli_ufplaca: [''],
     cli_tr_cnpj: [''],
@@ -91,7 +102,7 @@ export class CustomersComponent {
     cli_tr_ie: [''],
     cli_tr_pedagio: [''],
     cli_tr_observacao: [''],
-    cli_terminal: [null as number | null],
+    cli_terminal: [0],
     cli_pgs_fil: [0],
     cli_pgs_cod: [0],
     cli_pgs_estab: [0]
@@ -102,29 +113,26 @@ export class CustomersComponent {
   errorMessage = signal<string | null>(null);
 
   tiposCliente = [
-    { label: 'Jurídica', value: 'J' },
-    { label: 'Física', value: 'F' }
+    { label: 'Jurídica', value: CUSTOMER_TYPE.JURIDICAL },
+    { label: 'Física', value: CUSTOMER_TYPE.PHYSICAL }
   ];
 
   opcoesFrete = [
-    { label: 'CIF ', value: 'C' },
-    { label: 'FOB ', value: 'F' }
+    { label: 'CIF ', value: FREIGHT_TYPE.CIF },
+    { label: 'FOB ', value: FREIGHT_TYPE.FOB }
   ];
 
-  get allCustomers() {
-    return this.customerService.customers;
-  }
-
-  get filteredCustomers() {
-    const searchTerm = (this.searchControl.value || '').toLowerCase();
-    return searchTerm
-      ? this.allCustomers().filter(c =>
-          c.cli_nome.toLowerCase().includes(searchTerm) ||
-          c.cli_fantasia.toLowerCase().includes(searchTerm) ||
-          c.cli_cnpj.includes(searchTerm)
+  filteredCustomers = computed(() => {
+    const term = (this.searchTerm() || '').toLowerCase();
+    const customers = this.customerService.customers();
+    return term
+      ? customers.filter(c =>
+          c.cli_nome.toLowerCase().includes(term) ||
+          c.cli_fantasia.toLowerCase().includes(term) ||
+          c.cli_cnpj.includes(term)
         )
-      : this.allCustomers();
-  }
+      : customers;
+  });
 
   get dialogTitle() {
     return this.editingCustomer() ? `Editar: ${this.editingCustomer()?.cli_fantasia}` : 'Novo Cliente';
@@ -132,15 +140,15 @@ export class CustomersComponent {
 
   openNewCustomer() {
     this.editingCustomer.set(null);
-    const nextId = Math.max(...this.allCustomers().map(c => c.cli_codigo), 0) + 1;
+    const nextId = Math.max(...this.customerService.customers().map(c => c.cli_codigo), 0) + 1;
     
     this.customerForm.reset({
       cli_codigo: nextId,
-      cli_tipo: 'J',
-      cli_frete: 'C',
-      cli_pais: 'BRASIL',
-      cli_codpais: '1058',
-      cli_produtor: 'N'
+      cli_tipo: CUSTOMER_TYPE.JURIDICAL,
+      cli_frete: FREIGHT_TYPE.CIF,
+      cli_pais: COUNTRY.BRAZIL_NAME,
+      cli_codpais: COUNTRY.BRAZIL_CODE,
+      cli_produtor: PRODUCER_TYPE.NO
     });
     this.errorMessage.set(null);
     this.dialogOpen = true;
@@ -160,22 +168,30 @@ export class CustomersComponent {
       return;
     }
 
-    // Como cli_codigo está desabilitado, precisamos pegar o valor via getRawValue()
-    const customerData = this.customerForm.getRawValue();
+    const customerData = this.customerForm.getRawValue() as Customer;
     const isNewCustomer = !this.editingCustomer();
 
     if (!isNewCustomer) {
-      this.customerService.updateCustomer(customerData as Customer);
+      this.customerService.updateCustomer(customerData);
     } else {
-      this.customerService.addCustomer(customerData as Customer);
+      this.customerService.addCustomer(customerData);
     }
 
     this.closeDialog();
   }
 
   deleteCustomer(customer: Customer) {
-    if (!window.confirm(`Deseja realmente excluir ${customer.cli_nome}?`)) return;
-    this.customerService.deleteCustomer(customer.cli_codigo);
+    this.confirmationService.confirm({
+      message: `Deseja realmente excluir ${customer.cli_nome}?`,
+      header: 'Confirmar exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.customerService.deleteCustomer(customer.cli_codigo);
+      }
+    });
   }
 
   closeDialog() {

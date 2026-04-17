@@ -7,6 +7,7 @@
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Estado Selecionado (Emerald) */
 .active-menu-item {
   background-color: var(--p-primary-500) !important;
   color: #ffffff !important;
@@ -16,7 +17,22 @@
   color: #ffffff !important;
 }
 
-/* Forçar o ripple a aparecer no link */
+/* GARANTIR que o item ATIVO não mude de cor no hover */
+nav ul li a.active-menu-item:hover {
+  background-color: var(--p-primary-500) !important;
+  opacity: 1 !important;
+}
+
+/* GARANTIR que o item INATIVO permaneça transparente no hover */
+nav ul li a:not(.active-menu-item):hover {
+  background-color: transparent !important;
+}
+
+/* Ajuste no Ripple para não ficar muito claro no fundo escuro */
+:host ::ng-deep .p-ripple {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 :host ::ng-deep .p-ripple {
   overflow: hidden;
   position: relative;

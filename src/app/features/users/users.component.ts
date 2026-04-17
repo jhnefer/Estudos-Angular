@@ -1,6 +1,8 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -9,6 +11,8 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { UserService } from '../../core/services';
 import { AppUser } from '../../shared/models';
 
@@ -27,10 +31,16 @@ const roleLabels = {
 })
 export class UsersComponent {
   private fb = inject(FormBuilder);
-  private userService = inject(UserService);
+  public userService = inject(UserService);
+  private confirmationService = inject(ConfirmationService);
 
   searchControl = new FormControl('');
   
+  private searchTerm = toSignal(
+    this.searchControl.valueChanges.pipe(startWith('')),
+    { initialValue: '' }
+  );
+
   userForm = this.fb.nonNullable.group({
     id: [0],
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -43,10 +53,6 @@ export class UsersComponent {
   dialogOpen = false;
   editingUser = signal<AppUser | null>(null);
   errorMessage = signal<string | null>(null);
-
-  get allUsers() {
-    return this.userService.users;
-  }
 
   roles = [
     { label: 'Admin', value: 'admin' },
@@ -61,15 +67,16 @@ export class UsersComponent {
 
   roleLabels = roleLabels;
 
-  get filteredUsers() {
-    const searchTerm = (this.searchControl.value || '').toLowerCase();
-    return searchTerm
-      ? this.allUsers().filter(u =>
-          u.name.toLowerCase().includes(searchTerm) ||
-          u.email.toLowerCase().includes(searchTerm)
+  filteredUsers = computed(() => {
+    const term = (this.searchTerm() || '').toLowerCase();
+    const users = this.userService.users();
+    return term
+      ? users.filter(u =>
+          u.name.toLowerCase().includes(term) ||
+          u.email.toLowerCase().includes(term)
         )
-      : this.allUsers();
-  }
+      : users;
+  });
 
   get dialogTitle() {
     return this.editingUser() ? 'Editar Usuário' : 'Novo Usuário';
@@ -137,7 +144,7 @@ export class UsersComponent {
         lastLogin: this.editingUser()!.lastLogin
       });
     } else {
-      const nextId = Math.max(...this.allUsers().map(u => u.id), 0) + 1;
+      const nextId = Math.max(...this.userService.users().map(u => u.id), 0) + 1;
       this.userService.addUser({
         id: nextId,
         name: userData.name,
@@ -152,11 +159,17 @@ export class UsersComponent {
   }
 
   deleteUser(user: AppUser) {
-    if (!window.confirm(`Deseja realmente excluir ${user.name}?`)) {
-      return;
-    }
-
-    this.userService.deleteUser(user.id);
+    this.confirmationService.confirm({
+      message: `Deseja realmente excluir ${user.name}?`,
+      header: 'Confirmar exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.userService.deleteUser(user.id);
+      }
+    });
   }
 
   closeDialog() {

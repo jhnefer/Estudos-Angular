@@ -2,7 +2,7 @@
   <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3">
     <div>
       <h1 class="text-2xl font-bold m-0 text-900">Gestão de Clientes</h1>
-      <p class="text-sm text-500 m-0">{{ allCustomers().length }} clientes cadastrados</p>
+      <p class="text-sm text-500 m-0">{{ customerService.customers().length }} clientes cadastrados</p>
     </div>
 
     <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <p-table [value]="filteredCustomers" class="p-datatable-sm" [responsiveLayout]="'scroll'" [paginator]="true" [rows]="10">
+  <p-table [value]="filteredCustomers()" class="p-datatable-sm" [responsiveLayout]="'scroll'" [paginator]="true" [rows]="10">
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 80px">Cod</th>

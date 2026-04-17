@@ -4,7 +4,7 @@ export interface Supplier {
   for_fantasia: string;
   for_cnpj: string;
   for_ie: string;
-  for_tipo: string;
+  for_tipo: 'G' | 'S' | 'M';
   for_cep: string;
   for_endereco: string;
   for_numero: string;
@@ -21,7 +21,7 @@ export interface Supplier {
   for_contato: string;
   for_fax: string;
   for_fiscal: string;
-  for_produtor: string;
+  for_produtor: 'S' | 'N';
   for_contactb: string;
   for_serie: string;
   for_obs: string;

@@ -2,7 +2,7 @@
   <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3">
     <div>
       <h1 class="text-2xl font-bold m-0 text-900">Gestão de Usuários</h1>
-      <p class="text-sm text-500 m-0">{{ allUsers().length }} usuários cadastrados</p>
+      <p class="text-sm text-500 m-0">{{ userService.users().length }} usuários cadastrados</p>
     </div>
 
     <div class="flex flex-column sm:flex-row sm:align-items-center gap-3">
@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <p-table [value]="filteredUsers" class="p-datatable-sm" [responsiveLayout]="'scroll'">
+  <p-table [value]="filteredUsers()" class="p-datatable-sm" [responsiveLayout]="'scroll'">
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 80px">ID</th>

@@ -1,6 +1,8 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -12,8 +14,11 @@ import { InputIcon } from 'primeng/inputicon';
 import { TextareaModule } from 'primeng/textarea';
 import { TabsModule } from 'primeng/tabs';
 import { InputMaskModule } from 'primeng/inputmask';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { SupplierService } from '../../core/services';
 import { Supplier } from '../../shared/models';
+import { COUNTRY, PRODUCER_TYPE, SUPPLIER_TYPE } from '../../shared/constants/domain.constants';
 
 @Component({
   standalone: true,
@@ -31,51 +36,56 @@ import { Supplier } from '../../shared/models';
     InputIcon,
     TextareaModule,
     TabsModule,
-    InputMaskModule
+    InputMaskModule,
+    ConfirmDialogModule
   ],
   templateUrl: './suppliers.component.html',
   styleUrl: './suppliers.component.css'
 })
 export class SuppliersComponent {
   private fb = inject(FormBuilder);
-  private supplierService = inject(SupplierService);
+  public supplierService = inject(SupplierService);
+  private confirmationService = inject(ConfirmationService);
 
   searchControl = new FormControl('');
   
+  private searchTerm = toSignal(
+    this.searchControl.valueChanges.pipe(startWith('')),
+    { initialValue: '' }
+  );
+
   supplierForm = this.fb.nonNullable.group({
     for_codigo: [0],
     for_nome: ['', [Validators.required, Validators.maxLength(45)]],
     for_fantasia: ['', [Validators.required, Validators.maxLength(20)]],
     for_cnpj: ['', [Validators.required, Validators.maxLength(18)]],
     for_ie: ['', [Validators.required, Validators.maxLength(15)]],
-    for_tipo: ['G', [Validators.required]],
+    for_tipo: [SUPPLIER_TYPE.GENERAL as Supplier['for_tipo'], [Validators.required]],
     for_cep: ['', [Validators.required, Validators.maxLength(9)]],
     for_endereco: ['', [Validators.required, Validators.maxLength(45)]],
     for_numero: ['', [Validators.required, Validators.maxLength(5)]],
-    for_complemento: ['', [Validators.required, Validators.maxLength(30)]],
+    for_complemento: ['', [Validators.maxLength(30)]],
     for_bairro: ['', [Validators.required, Validators.maxLength(20)]],
     for_cidade: ['', [Validators.required, Validators.maxLength(30)]],
     for_estado: ['', [Validators.required, Validators.maxLength(2)]],
-    for_pais: ['Brasil', [Validators.required, Validators.maxLength(30)]],
-    for_codpais: ['1058', [Validators.required, Validators.maxLength(4)]],
+    for_pais: [COUNTRY.BRAZIL_NAME as string, [Validators.required, Validators.maxLength(30)]],
+    for_codpais: [COUNTRY.BRAZIL_CODE as string, [Validators.required, Validators.maxLength(4)]],
     for_praca: ['', [Validators.required, Validators.maxLength(30)]],
     for_praca_uf: ['', [Validators.required, Validators.maxLength(2)]],
     for_telefone: ['', [Validators.required, Validators.maxLength(14)]],
     for_email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
     for_contato: ['', [Validators.required, Validators.maxLength(30)]],
-    for_fax: ['', [Validators.required, Validators.maxLength(14)]],
+    for_fax: ['', [Validators.maxLength(14)]],
     for_fiscal: ['', [Validators.required, Validators.maxLength(2)]],
-    for_produtor: ['N', [Validators.required]],
+    for_produtor: [PRODUCER_TYPE.NO as Supplier['for_produtor'], [Validators.required]],
     for_contactb: ['', [Validators.required, Validators.maxLength(6)]],
     for_serie: ['', [Validators.required, Validators.maxLength(3)]],
-    for_obs: ['', [Validators.required, Validators.maxLength(55)]]
+    for_obs: ['', [Validators.maxLength(55)]]
   });
   
   dialogOpen = false;
   editingSupplier = signal<Supplier | null>(null);
   errorMessage = signal<string | null>(null);
-
-  allSuppliers = this.supplierService.suppliers;
 
   states = [
     { label: 'SP', value: 'SP' }, { label: 'RJ', value: 'RJ' }, { label: 'MG', value: 'MG' },
@@ -90,25 +100,25 @@ export class SuppliersComponent {
   ];
 
   types = [
-    { label: 'Geral', value: 'G' },
-    { label: 'Serviços', value: 'S' },
-    { label: 'Matéria-Prima', value: 'M' }
+    { label: 'Geral', value: SUPPLIER_TYPE.GENERAL },
+    { label: 'Serviços', value: SUPPLIER_TYPE.SERVICES },
+    { label: 'Matéria-Prima', value: SUPPLIER_TYPE.RAW_MATERIAL }
   ];
 
   produtorOptions = [
-    { label: 'Sim', value: 'S' },
-    { label: 'Não', value: 'N' }
+    { label: 'Sim', value: PRODUCER_TYPE.YES },
+    { label: 'Não', value: PRODUCER_TYPE.NO }
   ];
 
   filteredSuppliers = computed(() => {
-    const searchTerm = (this.searchControl.value || '').toLowerCase();
-    const suppliers = this.allSuppliers();
+    const term = (this.searchTerm() || '').toLowerCase();
+    const suppliers = this.supplierService.suppliers();
     
-    return searchTerm
+    return term
       ? suppliers.filter(s =>
-          s.for_nome.toLowerCase().includes(searchTerm) ||
-          s.for_cnpj.includes(searchTerm) ||
-          (s.for_fantasia && s.for_fantasia.toLowerCase().includes(searchTerm))
+          s.for_nome.toLowerCase().includes(term) ||
+          s.for_cnpj.includes(term) ||
+          (s.for_fantasia && s.for_fantasia.toLowerCase().includes(term))
         )
       : suppliers;
   });
@@ -121,10 +131,10 @@ export class SuppliersComponent {
     this.editingSupplier.set(null);
     this.supplierForm.reset({
       for_codigo: 0,
-      for_tipo: 'G',
-      for_pais: 'Brasil',
-      for_codpais: '1058',
-      for_produtor: 'N'
+      for_tipo: SUPPLIER_TYPE.GENERAL,
+      for_pais: COUNTRY.BRAZIL_NAME,
+      for_codpais: COUNTRY.BRAZIL_CODE,
+      for_produtor: PRODUCER_TYPE.NO
     });
     this.errorMessage.set(null);
     this.dialogOpen = true;
@@ -144,11 +154,11 @@ export class SuppliersComponent {
       return;
     }
 
-    const supplierData = this.supplierForm.getRawValue();
+    const supplierData = this.supplierForm.getRawValue() as Supplier;
     const isNew = !this.editingSupplier();
 
     if (isNew) {
-      const nextId = Math.max(...this.allSuppliers().map(s => s.for_codigo), 0) + 1;
+      const nextId = Math.max(...this.supplierService.suppliers().map(s => s.for_codigo), 0) + 1;
       this.supplierService.addSupplier({ ...supplierData, for_codigo: nextId });
     } else {
       this.supplierService.updateSupplier(supplierData);
@@ -158,10 +168,17 @@ export class SuppliersComponent {
   }
 
   deleteSupplier(supplier: Supplier) {
-    if (!window.confirm(`Deseja realmente excluir o fornecedor ${supplier.for_nome}?`)) {
-      return;
-    }
-    this.supplierService.deleteSupplier(supplier.for_codigo);
+    this.confirmationService.confirm({
+      message: `Deseja realmente excluir o fornecedor ${supplier.for_nome}?`,
+      header: 'Confirmar exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.supplierService.deleteSupplier(supplier.for_codigo);
+      }
+    });
   }
 
   closeDialog() {

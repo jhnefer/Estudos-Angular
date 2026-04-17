@@ -1,9 +1,11 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideHttpClient } from '@angular/common/http';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura'
 import { providePrimeNG } from 'primeng/config';
-import { SplitterModule } from 'primeng/splitter';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { routes } from '../routes/app.routes';
 
@@ -26,15 +28,21 @@ const MyCustomPreset = definePreset(Aura, {
 });
 
 export const appConfig: ApplicationConfig = {
-  
   providers: [
+    provideZonelessChangeDetection(),
+    provideRouter(routes),
+    provideAnimationsAsync(),
+    provideHttpClient(),
     providePrimeNG({
       theme: {
-        preset: MyCustomPreset
+        preset: MyCustomPreset,
+        options: {
+          darkModeSelector: '.my-app-dark'
+        }
       },
       ripple: true
     }),
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes)
+    ConfirmationService,
+    MessageService
   ]
 };
