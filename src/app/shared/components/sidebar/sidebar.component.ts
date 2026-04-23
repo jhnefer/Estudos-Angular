@@ -14,6 +14,7 @@ export class SidebarComponent {
   menuItems = [
     { label: 'Usuários', icon: 'pi pi-users', routerLink: '/users' },
     { label: 'Clientes', icon: 'pi pi-address-book', routerLink: '/customers' },
-    { label: 'Fornecedores', icon: 'pi pi-truck', routerLink: '/suppliers' }
+    { label: 'Fornecedores', icon: 'pi pi-truck', routerLink: '/suppliers' },
+    { label: 'Produtos', icon: 'pi pi-box', routerLink: '/products' }
   ];
 }

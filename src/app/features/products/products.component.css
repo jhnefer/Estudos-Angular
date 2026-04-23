@@ -1,0 +1,47 @@
+.product-badge {
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .3px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.product-badge.status-active {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+}
+
+.product-badge.status-inactive {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+:host ::ng-deep .p-tabview .p-tabview-panels {
+    padding: 0;
+}
+
+:host ::ng-deep .p-datepicker {
+    width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber {
+    width: 100%;
+}
