@@ -1,19 +1,31 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
+import { AppUser } from '../../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly _isLoggedIn = signal<boolean>(false);
-  readonly isLoggedIn = this._isLoggedIn.asReadonly();
+  private readonly _currentUser = signal<AppUser | null>(null);
+  readonly currentUser = this._currentUser.asReadonly();
+  readonly isLoggedIn = computed(() => !!this._currentUser());
 
   login() {
-    this._isLoggedIn.set(true);
+    // Simulação de login bem-sucedido
+    const mockUser: AppUser = {
+      id: 1,
+      name: 'Usuário Administrativo',
+      email: 'admin@navistock.com',
+      role: 'admin',
+      status: 'ativo',
+      lastLogin: new Date().toISOString()
+    };
+    this._currentUser.set(mockUser);
+    return true;
   }
 
   logout() {
-    this._isLoggedIn.set(false);
+    this._currentUser.set(null);
   }
 
   isAuthenticated(): boolean {
-    return this._isLoggedIn();
+    return this.isLoggedIn();
   }
 }

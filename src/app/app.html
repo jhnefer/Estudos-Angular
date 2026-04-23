@@ -2,7 +2,7 @@
   <router-outlet></router-outlet>
 </div>
 
-<!-- Global Confirm Dialog (Botões Sólidos com Alto Contraste) -->
+<!-- Global Confirm Dialog -->
 <p-confirmDialog maskStyleClass="backdrop-blur-sm" [closable]="false" styleClass="!border-0 !bg-transparent">
     <ng-template #headless let-message let-onAccept="onAccept" let-onReject="onReject">
         <div class="flex flex-column px-6 py-6 gap-5 rounded-2xl w-22rem shadow-8" 
@@ -40,14 +40,14 @@
             </div>
 
             <div class="flex align-items-center gap-3 w-full mt-2">
-                <!-- Botão Cancelar: Verde Escuro Sólido -->
+                <!-- Botão Cancelar -->
                 <p-button 
                     label="Cancelar" 
                     (click)="onReject()" 
                     styleClass="!p-3 w-full !bg-primary-700 !text-white !border-0 font-bold hover:!bg-primary-800" 
                     class="w-full" />
                 
-                <!-- Botão Confirmar: Verde Escuro Sólido -->
+                <!-- Botão Confirmar -->
                 <p-button 
                     label="Confirmar" 
                     (click)="onAccept()" 
