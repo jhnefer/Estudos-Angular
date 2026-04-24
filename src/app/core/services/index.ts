@@ -3,4 +3,5 @@ export * from './user.service';
 export * from './customer.service';
 export * from './supplier.service';
 export * from './product.service';
+export * from './supplier-product.service';
 

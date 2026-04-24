@@ -15,8 +15,8 @@ import { InputIcon } from 'primeng/inputicon';
 import { TabsModule } from 'primeng/tabs';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ConfirmationService } from 'primeng/api';
-import { ProductService } from '../../core/services';
-import { Product } from '../../shared/models';
+import { ProductService, SupplierService, SupplierProductService } from '../../core/services';
+import { Product, SupplierProduct } from '../../shared/models';
 
 @Component({
   standalone: true,
@@ -42,6 +42,8 @@ import { Product } from '../../shared/models';
 export class ProductsComponent {
   private fb = inject(FormBuilder);
   public productService = inject(ProductService);
+  public supplierService = inject(SupplierService);
+  public supplierProductService = inject(SupplierProductService);
   private confirmationService = inject(ConfirmationService);
 
   searchControl = new FormControl('');
@@ -52,7 +54,7 @@ export class ProductsComponent {
   );
 
   productForm = this.fb.nonNullable.group({
-    // ABA 1: Identificação
+    // ... (campos anteriores mantidos)
     pr_codigo: ['', [Validators.required]],
     pr_tp: ['', [Validators.required]],
     pr_descricao: ['', [Validators.required]],
@@ -62,8 +64,6 @@ export class ProductsComponent {
     pr_extensao: [''],
     pr_codbarra: [''],
     pr_barrateste: [''],
-
-    // ABA 2: Classificação
     pr_classif: [''],
     pr_grupo: [null as number | null],
     pr_marca: [''],
@@ -71,20 +71,14 @@ export class ProductsComponent {
     pr_tipo: [''],
     pr_ativo: ['SIM'],
     pr_estoque: ['SIM'],
-
-    // ABA 3: Unidade e Conversão
     pr_unidade: ['UN'],
     pr_segum: [''],
     pr_conversao: [1],
     pr_fator: [1],
-
-    // ABA 4: Valores e Custos
     pr_valorvenda: [0],
     pr_custo: [0],
     pr_custo2: [0],
     pr_custo3: [0],
-
-    // ABA 5: Fiscal e Logística
     pr_cst: [''],
     pr_cfop: [''],
     pr_percicms: [0],
@@ -99,10 +93,20 @@ export class ProductsComponent {
     pr_impa: [''],
     pr_issa: ['']
   });
+
+  // Novo formulário para adicionar fornecedor ao produto
+  supplierProductForm = this.fb.nonNullable.group({
+    for_codigo: [null as number | null, [Validators.required]],
+    cod_prod_forn: ['', [Validators.required]],
+    cod_cli_forn: [''],
+    unidade_compra: ['CX', [Validators.required]],
+    fator_conversao: [1.000, [Validators.required, Validators.min(0.001)]]
+  });
   
   dialogOpen = false;
   editingProduct = signal<Product | null>(null);
   errorMessage = signal<string | null>(null);
+  showSupplierForm = signal(false);
 
   statusOptions = [
     { label: 'Sim', value: 'SIM' },
@@ -119,6 +123,15 @@ export class ProductsComponent {
           p.pr_codbarra?.includes(term)
         )
       : products;
+  });
+
+  // Filtra os fornecedores do produto selecionado
+  selectedProductSuppliers = computed(() => {
+    const product = this.editingProduct();
+    if (!product) return [];
+    return this.supplierProductService.supplierProducts().filter(
+      sp => sp.pr_codigo === product.pr_codigo && sp.pr_tp === product.pr_tp
+    );
   });
 
   get dialogTitle() {
@@ -146,6 +159,7 @@ export class ProductsComponent {
     this.productForm.get('pr_codigo')?.enable();
     this.productForm.get('pr_tp')?.enable();
     this.errorMessage.set(null);
+    this.showSupplierForm.set(false);
     this.dialogOpen = true;
   }
 
@@ -155,6 +169,7 @@ export class ProductsComponent {
     this.productForm.get('pr_codigo')?.disable();
     this.productForm.get('pr_tp')?.disable();
     this.errorMessage.set(null);
+    this.showSupplierForm.set(false);
     this.dialogOpen = true;
   }
 
@@ -191,10 +206,46 @@ export class ProductsComponent {
     });
   }
 
+  addSupplierToProduct() {
+    if (this.supplierProductForm.invalid || !this.editingProduct()) return;
+
+    const formValue = this.supplierProductForm.getRawValue();
+    const product = this.editingProduct()!;
+    
+    // Busca o fornecedor na lista (comparando como número)
+    const supplier = this.supplierService.suppliers().find(s => s.for_codigo === formValue.for_codigo);
+
+    if (!supplier) return;
+
+    const newSupplierProduct: SupplierProduct = {
+      for_codigo: supplier.for_codigo.toString(),
+      for_nome: supplier.for_nome,
+      pr_codigo: product.pr_codigo,
+      pr_tp: product.pr_tp,
+      cod_prod_forn: formValue.cod_prod_forn,
+      cod_cli_forn: formValue.cod_cli_forn || '',
+      unidade_compra: formValue.unidade_compra,
+      fator_conversao: formValue.fator_conversao || 1
+    };
+
+    this.supplierProductService.addSupplierProduct(newSupplierProduct);
+    this.supplierProductForm.reset({ 
+      for_codigo: null,
+      unidade_compra: 'CX', 
+      fator_conversao: 1.000 
+    });
+    this.showSupplierForm.set(false);
+  }
+
+  removeSupplier(sp: SupplierProduct) {
+    this.supplierProductService.removeSupplierProduct(sp.for_codigo, sp.pr_codigo, sp.pr_tp);
+  }
+
   closeDialog() {
     this.dialogOpen = false;
     this.editingProduct.set(null);
     this.errorMessage.set(null);
     this.productForm.reset();
+    this.supplierProductForm.reset();
   }
 }

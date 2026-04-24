@@ -116,11 +116,13 @@
         <p-tab value="2">Unidade e Conversão</p-tab>
         <p-tab value="3">Valores e Custos</p-tab>
         <p-tab value="4">Fiscal e Logística</p-tab>
+        <p-tab value="5" [disabled]="!editingProduct()">Fornecedores</p-tab>
       </p-tablist>
 
       <p-tabpanels>
-        <!-- ABA 1: Identificação -->
+        <!-- ... (abas anteriores mantidas) ... -->
         <p-tabpanel value="0">
+          <!-- CONTEÚDO DA ABA 0 (Identificação) -->
           <div class="flex flex-column gap-3 pt-3">
             <div class="grid p-fluid">
               <div class="col-2 flex flex-column gap-1.5">
@@ -172,8 +174,8 @@
           </div>
         </p-tabpanel>
 
-        <!-- ABA 2: Classificação -->
         <p-tabpanel value="1">
+          <!-- CONTEÚDO DA ABA 1 (Classificação) -->
           <div class="flex flex-column gap-3 pt-3">
             <div class="grid p-fluid">
               <div class="col-4 flex flex-column gap-1.5">
@@ -214,8 +216,8 @@
           </div>
         </p-tabpanel>
 
-        <!-- ABA 3: Unidade e Conversão -->
         <p-tabpanel value="2">
+          <!-- CONTEÚDO DA ABA 2 (Unidade e Conversão) -->
           <div class="flex flex-column gap-3 pt-3">
             <div class="grid p-fluid">
               <div class="col-6 flex flex-column gap-1.5">
@@ -248,8 +250,8 @@
           </div>
         </p-tabpanel>
 
-        <!-- ABA 4: Valores e Custos -->
         <p-tabpanel value="3">
+          <!-- CONTEÚDO DA ABA 3 (Valores e Custos) -->
           <div class="flex flex-column gap-3 pt-3">
             <div class="grid p-fluid">
               <div class="col-12 flex flex-column gap-1.5">
@@ -275,8 +277,8 @@
           </div>
         </p-tabpanel>
 
-        <!-- ABA 5: Fiscal e Logística -->
         <p-tabpanel value="4">
+          <!-- CONTEÚDO DA ABA 4 (Fiscal e Logística) -->
           <div class="flex flex-column gap-4 pt-3">
             <div class="border-bottom-1 border-100 pb-3">
               <label class="text-xs font-bold text-primary uppercase block mb-3">Informações Fiscais</label>
@@ -332,6 +334,89 @@
                 <input pInputText formControlName="pr_edi" class="p-inputtext-sm" />
               </div>
             </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- ABA 6: Fornecedores -->
+        <p-tabpanel value="5">
+          <div class="flex flex-column gap-4 pt-3">
+            <div class="flex justify-content-between align-items-center">
+              <h3 class="text-lg font-bold m-0 text-700">Vínculos com Fornecedores</h3>
+              <p-button 
+                label="Vincular Fornecedor" 
+                icon="pi pi-plus" 
+                size="small"
+                (click)="showSupplierForm.set(true)" 
+                *ngIf="!showSupplierForm()" />
+            </div>
+
+            <!-- Formulário de Novo Vínculo -->
+            <div *ngIf="showSupplierForm()" class="p-4 border-round surface-100 border-1 border-200" [formGroup]="supplierProductForm">
+              <div class="grid p-fluid">
+                <div class="col-6 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fornecedor <span class="text-red-500">*</span></label>
+                  <p-select 
+                    [options]="supplierService.suppliers()" 
+                    formControlName="for_codigo" 
+                    optionLabel="for_nome" 
+                    optionValue="for_codigo" 
+                    placeholder="Selecione o Fornecedor"
+                    size="small">
+                  </p-select>
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Cód. no Fornecedor <span class="text-red-500">*</span></label>
+                  <input pInputText formControlName="cod_prod_forn" class="p-inputtext-sm" />
+                </div>
+                <div class="col-3 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Nosso Cód. no Forn.</label>
+                  <input pInputText formControlName="cod_cli_forn" class="p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="grid p-fluid mt-2">
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Unid. Compra <span class="text-red-500">*</span></label>
+                  <input pInputText formControlName="unidade_compra" class="p-inputtext-sm" placeholder="Ex: CX, PCT" />
+                </div>
+                <div class="col-4 flex flex-column gap-1.5">
+                  <label class="text-xs font-bold text-500 uppercase">Fator Conversão <span class="text-red-500">*</span></label>
+                  <p-inputNumber formControlName="fator_conversao" [minFractionDigits]="3" [maxFractionDigits]="3" size="small"></p-inputNumber>
+                </div>
+                <div class="col-4 flex align-items-end gap-2">
+                  <p-button label="Adicionar" icon="pi pi-check" severity="success" size="small" (click)="addSupplierToProduct()" class="w-full" />
+                  <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" size="small" (click)="showSupplierForm.set(false)" />
+                </div>
+              </div>
+            </div>
+
+            <p-table [value]="selectedProductSuppliers()" styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Fornecedor</th>
+                  <th>Cód. Forn.</th>
+                  <th>Unid. Compra</th>
+                  <th>Conversão</th>
+                  <th class="text-center">Ações</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-sp>
+                <tr>
+                  <td><span class="font-medium">{{ sp.for_nome }}</span></td>
+                  <td><span class="font-mono text-sm">{{ sp.cod_prod_forn }}</span></td>
+                  <td>{{ sp.unidade_compra }}</td>
+                  <td>{{ sp.fator_conversao | number:'1.3-3' }}</td>
+                  <td class="text-center">
+                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (click)="removeSupplier(sp)" />
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5" class="text-center p-4 text-500 italic">Nenhum fornecedor vinculado a este produto.</td>
+                </tr>
+              </ng-template>
+            </p-table>
           </div>
         </p-tabpanel>
       </p-tabpanels>
