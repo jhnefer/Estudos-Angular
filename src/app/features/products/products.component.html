@@ -1,4 +1,5 @@
 <div class="flex flex-column gap-4 mb-5">
+  <!-- Header -->
   <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3 border-bottom-1 pb-3">
     <div>
       <h1 class="text-2xl font-bold m-0 text-600">Gestão de Produtos</h1>
@@ -11,8 +12,8 @@
         <input 
           pInputText 
           [formControl]="searchControl"
-          placeholder="Pesquisar por descrição, código ou barras..." 
-          class="w-full text-sm" />
+          placeholder="Pesquisar por descrição..." 
+          class="w-full p-inputtext-sm" />
       </p-iconField>
       
       <p-button 
@@ -23,16 +24,9 @@
     </div>
   </div>
 
+  <!-- Tabela -->
   <div class="card shadow-2 border-round-xl overflow-hidden">
-    <p-table 
-      [value]="filteredProducts()" 
-      [paginator]="true" 
-      [rows]="10" 
-      [responsiveLayout]="'scroll'"
-      styleClass="p-datatable-sm"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} produtos">
-      
+    <p-table [value]="filteredProducts()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
       <ng-template pTemplate="header">
         <tr>
           <th style="width: 10%">Código</th>
@@ -44,7 +38,6 @@
           <th style="width: 10%" class="text-center">Ações</th>
         </tr>
       </ng-template>
-
       <ng-template pTemplate="body" let-product>
         <tr>
           <td><span class="font-bold text-primary">{{ product.pr_codigo }}</span></td>
@@ -64,27 +57,9 @@
           </td>
           <td class="text-center">
             <div class="flex justify-content-center gap-1">
-              <p-button 
-                icon="pi pi-pencil" 
-                severity="secondary" 
-                [text]="true" 
-                [rounded]="true"
-                (click)="openEditProduct(product)" />
-              <p-button 
-                icon="pi pi-trash" 
-                severity="danger" 
-                [text]="true" 
-                [rounded]="true"
-                (click)="deleteProduct(product)" />
+              <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true" (click)="openEditProduct(product)" />
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (click)="deleteProduct(product)" />
             </div>
-          </td>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="7" class="text-center p-5 text-500">
-            Nenhum produto encontrado.
           </td>
         </tr>
       </ng-template>
@@ -92,331 +67,245 @@
   </div>
 </div>
 
-<!-- Diálogo de Cadastro/Edição -->
 <p-dialog 
   [(visible)]="dialogOpen" 
   [header]="dialogTitle" 
   [modal]="true" 
-  [style]="{ width: '850px' }" 
+  [style]="{ width: '950px' }" 
   [breakpoints]="{ '960px': '95vw' }"
   [closable]="false"
   styleClass="shadow-8"
   (onHide)="closeDialog()">
 
-  <div class="p-3" [formGroup]="productForm">
-    <div *ngIf="errorMessage()" class="p-3 mb-4 border-round bg-red-50 text-red-700 border-1 border-red-100 flex align-items-start gap-2">
-      <i class="pi pi-exclamation-circle mt-1"></i>
-      <span class="text-sm font-medium">{{ errorMessage() }}</span>
-    </div>
-
+  <div class="p-2" [formGroup]="productForm">
     <p-tabs value="0">
       <p-tablist>
-        <p-tab value="0">Identificação</p-tab>
-        <p-tab value="1">Classificação</p-tab>
-        <p-tab value="2">Unidade e Conversão</p-tab>
-        <p-tab value="3">Valores e Custos</p-tab>
-        <p-tab value="4">Fiscal e Logística</p-tab>
-        <p-tab value="5" [disabled]="!editingProduct()">Fornecedores</p-tab>
+        <p-tab value="0">Geral</p-tab>
+        <p-tab value="1">Comercial</p-tab>
+        <p-tab value="2">Fiscal & Logística</p-tab>
+        <p-tab value="3">Fornecedores</p-tab>
       </p-tablist>
 
       <p-tabpanels>
-        <!-- ... (abas anteriores mantidas) ... -->
+        <!-- ABA 0: GERAL -->
         <p-tabpanel value="0">
-          <!-- CONTEÚDO DA ABA 0 (Identificação) -->
           <div class="flex flex-column gap-3 pt-3">
-            <div class="grid p-fluid">
-              <div class="col-2 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Código <span class="text-red-500">*</span></label>
-                <input pInputText formControlName="pr_codigo" class="p-inputtext-sm font-mono bg-gray-50" />
-              </div>
-              <div class="col-2 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Tipo <span class="text-red-500">*</span></label>
-                <input pInputText formControlName="pr_tp" class="p-inputtext-sm" maxlength="3" />
-              </div>
-              <div class="col-8 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Descrição <span class="text-red-500">*</span></label>
-                <input pInputText formControlName="pr_descricao" class="p-inputtext-sm" placeholder="Descrição Principal" />
-              </div>
-            </div>
-
-            <div class="grid p-fluid">
-              <div class="col-12 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Descrição (Inglês)</label>
-                <input pInputText formControlName="pr_description" class="p-inputtext-sm" />
-              </div>
-            </div>
-
-            <div class="grid p-fluid">
-              <div class="col-3 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Prefixo</label>
-                <input pInputText formControlName="pr_prefixo" class="p-inputtext-sm" />
-              </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Número / Part Number</label>
-                <input pInputText formControlName="pr_numero" class="p-inputtext-sm" />
-              </div>
-              <div class="col-3 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Extensão</label>
-                <input pInputText formControlName="pr_extensao" class="p-inputtext-sm" />
+            <div class="surface-card p-4 border-round-lg border-1 border-200">
+              <div class="text-xs font-bold text-primary uppercase mb-4 pb-2 border-bottom-1 border-100">Informações Básicas</div>
+              <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-2">
+                  <label class="font-bold text-xs text-500 uppercase">Código *</label>
+                  <input pInputText formControlName="pr_codigo" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-2">
+                  <label class="font-bold text-xs text-500 uppercase">Tipo *</label>
+                  <input pInputText formControlName="pr_tp" maxlength="3" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-8">
+                  <label class="font-bold text-xs text-500 uppercase">Descrição do Produto *</label>
+                  <input pInputText formControlName="pr_descricao" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-6">
+                  <label class="font-bold text-xs text-500 uppercase">EAN / Código de Barras</label>
+                  <input pInputText formControlName="pr_codbarra" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Status</label>
+                  <p-select [options]="statusOptions" formControlName="pr_ativo" optionLabel="label" optionValue="value" size="small" [fluid]="true"></p-select>
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Mov. Estoque</label>
+                  <p-select [options]="statusOptions" formControlName="pr_estoque" optionLabel="label" optionValue="value" size="small" [fluid]="true"></p-select>
+                </div>
               </div>
             </div>
 
-            <div class="grid p-fluid">
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Código de Barras (EAN)</label>
-                <input pInputText formControlName="pr_codbarra" class="p-inputtext-sm" />
-              </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Barras Auxiliar</label>
-                <input pInputText formControlName="pr_barrateste" class="p-inputtext-sm" />
+            <div class="surface-card p-4 border-round-lg border-1 border-200">
+              <div class="text-xs font-bold text-500 uppercase mb-4 pb-2 border-bottom-1 border-100">Classificação Técnica</div>
+              <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Marca</label>
+                  <input pInputText formControlName="pr_marca" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">NCM</label>
+                  <input pInputText formControlName="pr_classif" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Espécie</label>
+                  <input pInputText formControlName="pr_especie" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Cód. Grupo</label>
+                  <p-inputNumber formControlName="pr_grupo" [useGrouping]="false" size="small" [fluid]="true"></p-inputNumber>
+                </div>
               </div>
             </div>
           </div>
         </p-tabpanel>
 
+        <!-- ABA 1: COMERCIAL -->
         <p-tabpanel value="1">
-          <!-- CONTEÚDO DA ABA 1 (Classificação) -->
           <div class="flex flex-column gap-3 pt-3">
-            <div class="grid p-fluid">
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">NCM (Classificação)</label>
-                <input pInputText formControlName="pr_classif" class="p-inputtext-sm" />
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Marca</label>
-                <input pInputText formControlName="pr_marca" class="p-inputtext-sm" />
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Grupo</label>
-                <p-inputNumber formControlName="pr_grupo" [useGrouping]="false" size="small" class="w-full"></p-inputNumber>
-              </div>
-            </div>
-
-            <div class="grid p-fluid">
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Espécie / Categoria</label>
-                <input pInputText formControlName="pr_especie" class="p-inputtext-sm" />
-              </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Tipo de Produto</label>
-                <input pInputText formControlName="pr_tipo" class="p-inputtext-sm" />
+            <div class="surface-card p-4 border-round-lg border-1 border-200">
+              <div class="text-xs font-bold text-primary uppercase mb-4 pb-2 border-bottom-1 border-100">Unidades de Medida</div>
+              <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Unid. Compra</label>
+                  <input pInputText formControlName="pr_unidade" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Unid. Estoque</label>
+                  <input pInputText formControlName="pr_segum" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Conversão</label>
+                  <p-inputNumber formControlName="pr_conversao" [minFractionDigits]="3" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-12 md:col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Multiplicador</label>
+                  <p-inputNumber formControlName="pr_fator" [minFractionDigits]="3" size="small" [fluid]="true"></p-inputNumber>
+                </div>
               </div>
             </div>
 
-            <div class="grid p-fluid">
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Status do Item</label>
-                <p-select [options]="statusOptions" formControlName="pr_ativo" optionLabel="label" optionValue="value" size="small" class="w-full"></p-select>
-              </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Controla Estoque?</label>
-                <p-select [options]="statusOptions" formControlName="pr_estoque" optionLabel="label" optionValue="value" size="small" class="w-full"></p-select>
+            <div class="surface-card p-4 border-round-lg border-1 border-200 bg-blue-50">
+              <div class="text-xs font-bold text-blue-700 uppercase mb-4 pb-2 border-bottom-1 border-blue-100">Formação de Preço</div>
+              <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-4">
+                  <label class="font-bold text-sm text-900 uppercase">Preço de Venda Final</label>
+                  <p-inputNumber formControlName="pr_valorvenda" mode="currency" currency="BRL" locale="pt-BR" [fluid]="true" inputStyleClass="font-bold text-lg"></p-inputNumber>
+                </div>
+                <div class="field col-12 md:col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Custo Médio (CMV)</label>
+                  <p-inputNumber formControlName="pr_custo" [minFractionDigits]="2" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-12 md:col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Custo Reposição</label>
+                  <p-inputNumber formControlName="pr_custo2" [minFractionDigits]="2" size="small" [fluid]="true"></p-inputNumber>
+                </div>
               </div>
             </div>
           </div>
         </p-tabpanel>
 
+        <!-- ABA 2: FISCAL & LOGÍSTICA -->
         <p-tabpanel value="2">
-          <!-- CONTEÚDO DA ABA 2 (Unidade e Conversão) -->
-          <div class="flex flex-column gap-3 pt-3">
-            <div class="grid p-fluid">
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Unidade de Medida (Compra)</label>
-                <input pInputText formControlName="pr_unidade" class="p-inputtext-sm" maxlength="5" />
-              </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Unidade de Medida (Estoque)</label>
-                <input pInputText formControlName="pr_segum" class="p-inputtext-sm" maxlength="6" />
+          <div class="flex flex-column gap-3 pt-3 p-fluid">
+            <div class="surface-card p-4 border-round-lg border-1 border-200">
+              <div class="text-xs font-bold text-primary uppercase mb-4 pb-2 border-bottom-1 border-100">Regras Fiscais</div>
+              <div class="formgrid grid">
+                <div class="field col-2">
+                  <label class="font-bold text-xs text-500 uppercase">CST</label>
+                  <input pInputText formControlName="pr_cst" class="p-inputtext-sm text-center" />
+                </div>
+                <div class="field col-2">
+                  <label class="font-bold text-xs text-500 uppercase">CFOP</label>
+                  <input pInputText formControlName="pr_cfop" class="p-inputtext-sm text-center" />
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">ICMS %</label>
+                  <p-inputNumber formControlName="pr_percicms" suffix="%" [minFractionDigits]="2" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Redução ICMS %</label>
+                  <p-inputNumber formControlName="pr_reduicms" suffix="%" [minFractionDigits]="2" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-3">
+                  <label class="font-bold text-xs text-500 uppercase">IMPA</label>
+                  <input pInputText formControlName="pr_impa" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-3">
+                  <label class="font-bold text-xs text-500 uppercase">ISS</label>
+                  <input pInputText formControlName="pr_issa" class="p-inputtext-sm" />
+                </div>
+                <div class="field col-6">
+                  <label class="font-bold text-xs text-500 uppercase">ID Integração EDI</label>
+                  <input pInputText formControlName="pr_edi" class="p-inputtext-sm" />
+                </div>
               </div>
             </div>
 
-            <div class="grid p-fluid">
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Fator de Conversão</label>
-                <p-inputNumber formControlName="pr_conversao" [minFractionDigits]="3" [maxFractionDigits]="3" size="small" class="w-full"></p-inputNumber>
+            <div class="surface-card p-4 border-round-lg border-1 border-200">
+              <div class="text-xs font-bold text-500 uppercase mb-4 pb-2 border-bottom-1 border-100">Controle Logístico</div>
+              <div class="formgrid grid">
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Almoxarifado</label>
+                  <p-inputNumber formControlName="pr_almoxarifado" [useGrouping]="false" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Estoque Mínimo</label>
+                  <p-inputNumber formControlName="pr_minimo" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Região Logística</label>
+                  <p-inputNumber formControlName="pr_regiao" [useGrouping]="false" size="small" [fluid]="true"></p-inputNumber>
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Data Edição</label>
+                  <p-datepicker formControlName="pr_edicao" dateFormat="dd/mm/yy" [showIcon]="true" size="small" [fluid]="true"></p-datepicker>
+                </div>
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Cód. Progress</label>
+                  <p-inputNumber formControlName="pr_codprogress" [useGrouping]="false" size="small" [fluid]="true" readonly></p-inputNumber>
+                </div>
               </div>
-              <div class="col-6 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Fator Multiplicador</label>
-                <p-inputNumber formControlName="pr_fator" [minFractionDigits]="3" [maxFractionDigits]="3" size="small" class="w-full"></p-inputNumber>
-              </div>
-            </div>
-            
-            <div class="p-3 bg-blue-50 border-round border-1 border-blue-100 mt-2">
-              <p class="text-xs text-blue-700 m-0">
-                <i class="pi pi-info-circle mr-1"></i>
-                O fator de conversão é usado para transformar a unidade de compra na unidade de estoque.
-              </p>
             </div>
           </div>
         </p-tabpanel>
 
+        <!-- ABA 3: FORNECEDORES -->
         <p-tabpanel value="3">
-          <!-- CONTEÚDO DA ABA 3 (Valores e Custos) -->
           <div class="flex flex-column gap-3 pt-3">
-            <div class="grid p-fluid">
-              <div class="col-12 flex flex-column gap-1.5">
-                <label class="text-sm font-bold text-primary uppercase">Preço de Venda Sugerido</label>
-                <p-inputNumber formControlName="pr_valorvenda" mode="currency" currency="BRL" locale="pt-BR" size="large" class="w-full"></p-inputNumber>
-              </div>
-            </div>
-
-            <div class="grid p-fluid mt-2">
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Custo CMV (Médio)</label>
-                <p-inputNumber formControlName="pr_custo" [minFractionDigits]="2" [maxFractionDigits]="5" size="small" class="w-full"></p-inputNumber>
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Custo Reposição</label>
-                <p-inputNumber formControlName="pr_custo2" [minFractionDigits]="2" [maxFractionDigits]="5" size="small" class="w-full"></p-inputNumber>
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Custo Standard</label>
-                <p-inputNumber formControlName="pr_custo3" [minFractionDigits]="2" [maxFractionDigits]="5" size="small" class="w-full"></p-inputNumber>
-              </div>
-            </div>
-          </div>
-        </p-tabpanel>
-
-        <p-tabpanel value="4">
-          <!-- CONTEÚDO DA ABA 4 (Fiscal e Logística) -->
-          <div class="flex flex-column gap-4 pt-3">
-            <div class="border-bottom-1 border-100 pb-3">
-              <label class="text-xs font-bold text-primary uppercase block mb-3">Informações Fiscais</label>
-              <div class="grid p-fluid">
-                <div class="col-2 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">CST</label>
-                  <input pInputText formControlName="pr_cst" class="p-inputtext-sm font-mono" maxlength="2" />
+            <div class="surface-card p-4 border-round-lg border-1 border-300 bg-gray-50 p-fluid shadow-1">
+              <div class="text-xs font-bold text-primary uppercase mb-4 pb-2 border-bottom-1 border-200">Novo Vínculo de Fornecedor</div>
+              <div [formGroup]="supplierProductForm" class="formgrid grid align-items-end">
+                <div class="field col-4">
+                  <label class="font-bold text-xs text-500 uppercase">Fornecedor</label>
+                  <p-select [options]="supplierService.suppliers()" formControlName="for_codigo" optionLabel="for_nome" optionValue="for_codigo" placeholder="Selecione..." size="small" [fluid]="true"></p-select>
                 </div>
-                <div class="col-2 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">CFOP</label>
-                  <input pInputText formControlName="pr_cfop" class="p-inputtext-sm font-mono" maxlength="4" />
-                </div>
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">% ICMS</label>
-                  <p-inputNumber formControlName="pr_percicms" [minFractionDigits]="2" [maxFractionDigits]="5" suffix="%" size="small" class="w-full"></p-inputNumber>
-                </div>
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">Redução ICMS</label>
-                  <p-inputNumber formControlName="pr_reduicms" [minFractionDigits]="2" [maxFractionDigits]="5" suffix="%" size="small" class="w-full"></p-inputNumber>
-                </div>
-              </div>
-            </div>
-
-            <div class="border-bottom-1 border-100 pb-3">
-              <label class="text-xs font-bold text-primary uppercase block mb-3">Estoque e Logística</label>
-              <div class="grid p-fluid">
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">Almoxarifado Padrão</label>
-                  <p-inputNumber formControlName="pr_almoxarifado" [useGrouping]="false" size="small" class="w-full"></p-inputNumber>
-                </div>
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">Região Logística</label>
-                  <p-inputNumber formControlName="pr_regiao" [useGrouping]="false" size="small" class="w-full"></p-inputNumber>
-                </div>
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500">Estoque Mínimo</label>
-                  <p-inputNumber formControlName="pr_minimo" size="small" class="w-full"></p-inputNumber>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid p-fluid">
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Data Edição</label>
-                <p-datepicker formControlName="pr_edicao" dateFormat="dd/mm/yy" [showIcon]="true" size="small" class="w-full"></p-datepicker>
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">Cód. Progress</label>
-                <p-inputNumber formControlName="pr_codprogress" [useGrouping]="false" size="small" class="w-full" readonly></p-inputNumber>
-              </div>
-              <div class="col-4 flex flex-column gap-1.5">
-                <label class="text-xs font-bold text-500 uppercase">EDI / Integração</label>
-                <input pInputText formControlName="pr_edi" class="p-inputtext-sm" />
-              </div>
-            </div>
-          </div>
-        </p-tabpanel>
-
-        <!-- ABA 6: Fornecedores -->
-        <p-tabpanel value="5">
-          <div class="flex flex-column gap-4 pt-3">
-            <div class="flex justify-content-between align-items-center">
-              <h3 class="text-lg font-bold m-0 text-700">Vínculos com Fornecedores</h3>
-              <p-button 
-                label="Vincular Fornecedor" 
-                icon="pi pi-plus" 
-                size="small"
-                (click)="showSupplierForm.set(true)" 
-                *ngIf="!showSupplierForm()" />
-            </div>
-
-            <!-- Formulário de Novo Vínculo -->
-            <div *ngIf="showSupplierForm()" class="p-4 border-round surface-100 border-1 border-200" [formGroup]="supplierProductForm">
-              <div class="grid p-fluid">
-                <div class="col-6 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Fornecedor <span class="text-red-500">*</span></label>
-                  <p-select 
-                    [options]="supplierService.suppliers()" 
-                    formControlName="for_codigo" 
-                    optionLabel="for_nome" 
-                    optionValue="for_codigo" 
-                    placeholder="Selecione o Fornecedor"
-                    size="small">
-                  </p-select>
-                </div>
-                <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Cód. no Fornecedor <span class="text-red-500">*</span></label>
+                <div class="field col-3">
+                  <label class="font-bold text-xs text-500 uppercase">Cód. no Forn.</label>
                   <input pInputText formControlName="cod_prod_forn" class="p-inputtext-sm" />
                 </div>
-                <div class="col-3 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Nosso Cód. no Forn.</label>
-                  <input pInputText formControlName="cod_cli_forn" class="p-inputtext-sm" />
+                <div class="field col-2">
+                  <label class="font-bold text-xs text-500 uppercase">Unidade</label>
+                  <input pInputText formControlName="unidade_compra" class="p-inputtext-sm" />
                 </div>
-              </div>
-
-              <div class="grid p-fluid mt-2">
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Unid. Compra <span class="text-red-500">*</span></label>
-                  <input pInputText formControlName="unidade_compra" class="p-inputtext-sm" placeholder="Ex: CX, PCT" />
+                <div class="field col-2">
+                  <label class="font-bold text-xs text-500 uppercase">Fator</label>
+                  <p-inputNumber formControlName="fator_conversao" [minFractionDigits]="3" size="small" [fluid]="true"></p-inputNumber>
                 </div>
-                <div class="col-4 flex flex-column gap-1.5">
-                  <label class="text-xs font-bold text-500 uppercase">Fator Conversão <span class="text-red-500">*</span></label>
-                  <p-inputNumber formControlName="fator_conversao" [minFractionDigits]="3" [maxFractionDigits]="3" size="small"></p-inputNumber>
-                </div>
-                <div class="col-4 flex align-items-end gap-2">
-                  <p-button label="Adicionar" icon="pi pi-check" severity="success" size="small" (click)="addSupplierToProduct()" class="w-full" />
-                  <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" size="small" (click)="showSupplierForm.set(false)" />
+                <div class="col-1">
+                  <p-button icon="pi pi-plus" (click)="addSupplierToProduct()" styleClass="p-button-sm w-full"></p-button>
                 </div>
               </div>
             </div>
 
-            <p-table [value]="selectedProductSuppliers()" styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Fornecedor</th>
-                  <th>Cód. Forn.</th>
-                  <th>Unid. Compra</th>
-                  <th>Conversão</th>
-                  <th class="text-center">Ações</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-sp>
-                <tr>
-                  <td><span class="font-medium">{{ sp.for_nome }}</span></td>
-                  <td><span class="font-mono text-sm">{{ sp.cod_prod_forn }}</span></td>
-                  <td>{{ sp.unidade_compra }}</td>
-                  <td>{{ sp.fator_conversao | number:'1.3-3' }}</td>
-                  <td class="text-center">
-                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (click)="removeSupplier(sp)" />
-                  </td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="5" class="text-center p-4 text-500 italic">Nenhum fornecedor vinculado a este produto.</td>
-                </tr>
-              </ng-template>
-            </p-table>
+            <div class="border-round-lg border-1 border-200 overflow-hidden shadow-1">
+              <p-table [value]="localSupplierProducts()" styleClass="p-datatable-sm" scrollHeight="200px">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th class="bg-gray-100 text-xs uppercase py-3">Fornecedor</th>
+                    <th class="bg-gray-100 text-xs uppercase py-3">Cód. no Fornecedor</th>
+                    <th class="bg-gray-100 text-xs uppercase py-3">Unidade</th>
+                    <th class="bg-gray-100 text-xs uppercase py-3">Fator</th>
+                    <th class="bg-gray-100 text-xs uppercase py-3 text-center" style="width: 60px">Ações</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-sp>
+                  <tr>
+                    <td class="text-sm">{{ sp.for_nome }}</td>
+                    <td class="text-sm font-mono text-500">{{ sp.cod_prod_forn }}</td>
+                    <td class="text-sm text-500">{{ sp.unidade_compra }}</td>
+                    <td class="text-sm font-bold">{{ sp.fator_conversao | number:'1.3-3' }}</td>
+                    <td class="text-center">
+                      <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small" (click)="removeSupplier(sp)" />
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
           </div>
         </p-tabpanel>
       </p-tabpanels>
@@ -424,15 +313,9 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-content-end gap-2 p-2">
-      <p-button 
-        label="Cancelar" 
-        (click)="closeDialog()" 
-        styleClass="p-button-text p-button-secondary" />
-      <p-button 
-        label="Salvar" 
-        (click)="saveProduct()" 
-        styleClass="p-button-primary px-4 shadow-2" />
+    <div class="flex justify-content-end gap-2 p-3 border-top-1 border-100 bg-gray-50 border-round-bottom-xl">
+      <p-button label="Cancelar" (click)="closeDialog()" styleClass="p-button-text p-button-secondary" />
+      <p-button label="Confirmar e Salvar" icon="pi pi-save" (click)="saveProduct()" styleClass="p-button-primary px-5 shadow-2" />
     </div>
   </ng-template>
 </p-dialog>

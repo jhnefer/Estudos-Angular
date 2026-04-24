@@ -15,6 +15,7 @@ import { InputIcon } from 'primeng/inputicon';
 import { TabsModule } from 'primeng/tabs';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ConfirmationService } from 'primeng/api';
+import { DividerModule } from 'primeng/divider';
 import { ProductService, SupplierService, SupplierProductService } from '../../core/services';
 import { Product, SupplierProduct } from '../../shared/models';
 
@@ -34,7 +35,8 @@ import { Product, SupplierProduct } from '../../shared/models';
     IconField, 
     InputIcon,
     TabsModule,
-    DatePickerModule
+    DatePickerModule,
+    DividerModule
   ],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css'
@@ -54,7 +56,6 @@ export class ProductsComponent {
   );
 
   productForm = this.fb.nonNullable.group({
-    // ... (campos anteriores mantidos)
     pr_codigo: ['', [Validators.required]],
     pr_tp: ['', [Validators.required]],
     pr_descricao: ['', [Validators.required]],
@@ -94,7 +95,6 @@ export class ProductsComponent {
     pr_issa: ['']
   });
 
-  // Novo formulário para adicionar fornecedor ao produto
   supplierProductForm = this.fb.nonNullable.group({
     for_codigo: [null as number | null, [Validators.required]],
     cod_prod_forn: ['', [Validators.required]],
@@ -103,10 +103,11 @@ export class ProductsComponent {
     fator_conversao: [1.000, [Validators.required, Validators.min(0.001)]]
   });
   
+  localSupplierProducts = signal<SupplierProduct[]>([]);
+  
   dialogOpen = false;
   editingProduct = signal<Product | null>(null);
   errorMessage = signal<string | null>(null);
-  showSupplierForm = signal(false);
 
   statusOptions = [
     { label: 'Sim', value: 'SIM' },
@@ -125,15 +126,6 @@ export class ProductsComponent {
       : products;
   });
 
-  // Filtra os fornecedores do produto selecionado
-  selectedProductSuppliers = computed(() => {
-    const product = this.editingProduct();
-    if (!product) return [];
-    return this.supplierProductService.supplierProducts().filter(
-      sp => sp.pr_codigo === product.pr_codigo && sp.pr_tp === product.pr_tp
-    );
-  });
-
   get dialogTitle() {
     return this.editingProduct() 
       ? `Editar: ${this.editingProduct()?.pr_descricao}` 
@@ -142,6 +134,7 @@ export class ProductsComponent {
 
   openNewProduct() {
     this.editingProduct.set(null);
+    this.localSupplierProducts.set([]);
     this.productForm.reset({
       pr_ativo: 'SIM',
       pr_estoque: 'SIM',
@@ -159,7 +152,6 @@ export class ProductsComponent {
     this.productForm.get('pr_codigo')?.enable();
     this.productForm.get('pr_tp')?.enable();
     this.errorMessage.set(null);
-    this.showSupplierForm.set(false);
     this.dialogOpen = true;
   }
 
@@ -168,8 +160,13 @@ export class ProductsComponent {
     this.productForm.patchValue(product as any);
     this.productForm.get('pr_codigo')?.disable();
     this.productForm.get('pr_tp')?.disable();
+    
+    const existing = this.supplierProductService.supplierProducts().filter(
+      sp => sp.pr_codigo === product.pr_codigo && sp.pr_tp === product.pr_tp
+    );
+    this.localSupplierProducts.set([...existing]);
+    
     this.errorMessage.set(null);
-    this.showSupplierForm.set(false);
     this.dialogOpen = true;
   }
 
@@ -189,6 +186,7 @@ export class ProductsComponent {
       this.productService.addProduct(productData);
     }
 
+    this.syncSuppliers(productData.pr_codigo, productData.pr_tp);
     this.closeDialog();
   }
 
@@ -206,39 +204,59 @@ export class ProductsComponent {
     });
   }
 
+  private syncSuppliers(pr_codigo: string, pr_tp: string) {
+    const allSP = this.supplierProductService.supplierProducts();
+    
+    this.localSupplierProducts().forEach(sp => {
+      const exists = allSP.some(item => 
+        item.for_codigo === sp.for_codigo && 
+        item.pr_codigo === pr_codigo && 
+        item.pr_tp === pr_tp
+      );
+      if (!exists) {
+        this.supplierProductService.addSupplierProduct({ ...sp, pr_codigo, pr_tp });
+      }
+    });
+  }
+
   addSupplierToProduct() {
-    if (this.supplierProductForm.invalid || !this.editingProduct()) return;
+    if (this.supplierProductForm.invalid) return;
 
     const formValue = this.supplierProductForm.getRawValue();
-    const product = this.editingProduct()!;
+    const productCode = this.productForm.get('pr_codigo')?.value || '';
+    const productTp = this.productForm.get('pr_tp')?.value || '';
     
-    // Busca o fornecedor na lista (comparando como número)
     const supplier = this.supplierService.suppliers().find(s => s.for_codigo === formValue.for_codigo);
-
     if (!supplier) return;
 
     const newSupplierProduct: SupplierProduct = {
       for_codigo: supplier.for_codigo.toString(),
       for_nome: supplier.for_nome,
-      pr_codigo: product.pr_codigo,
-      pr_tp: product.pr_tp,
+      pr_codigo: productCode,
+      pr_tp: productTp,
       cod_prod_forn: formValue.cod_prod_forn,
       cod_cli_forn: formValue.cod_cli_forn || '',
       unidade_compra: formValue.unidade_compra,
       fator_conversao: formValue.fator_conversao || 1
     };
 
-    this.supplierProductService.addSupplierProduct(newSupplierProduct);
+    this.localSupplierProducts.update(prev => [...prev, newSupplierProduct]);
+    
     this.supplierProductForm.reset({ 
       for_codigo: null,
       unidade_compra: 'CX', 
       fator_conversao: 1.000 
     });
-    this.showSupplierForm.set(false);
   }
 
   removeSupplier(sp: SupplierProduct) {
-    this.supplierProductService.removeSupplierProduct(sp.for_codigo, sp.pr_codigo, sp.pr_tp);
+    this.localSupplierProducts.update(prev => 
+      prev.filter(item => item.for_codigo !== sp.for_codigo)
+    );
+    
+    if (this.editingProduct()) {
+      this.supplierProductService.removeSupplierProduct(sp.for_codigo, sp.pr_codigo, sp.pr_tp);
+    }
   }
 
   closeDialog() {
